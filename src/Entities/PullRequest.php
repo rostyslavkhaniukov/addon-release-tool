@@ -11,12 +11,15 @@ class PullRequest
     public $mergedAt;
     public $head;
     public $mergeCommitSha;
-    public $title;
+    
+    /** @var string */
     public $htmlUrl;
     public $number;
 
     /** @var array */
     public $labels;
+
+    public $title;
 
     public function __construct(array $data)
     {

@@ -42,6 +42,7 @@ class Client
         $prs = $this->collectReleasePRs();
         $builder = new ReleaseNotesBuilder();
         var_dump($builder->build($prs));
+        // $this->createTag($this->getLastCommit()->sha);
     }
 
     /**
@@ -103,6 +104,14 @@ class Client
         return '/repos/' . $this->owner . '/' . $this->repo . '/releases';
     }
 
+    /**
+     * @return string
+     */
+    public function tagsEndpoint()
+    {
+        return '/repos/' . $this->owner . '/' . $this->repo . '/git/tags';
+    }
+
     public function compareEndpoint($branch1, $branch2)
     {
         if ($branch1 instanceof Release) {
@@ -141,6 +150,40 @@ class Client
         }
 
         return $releasePR;
+    }
+
+    public function collectReleasePRs2()
+    {
+        $releases = Release::fromCollection($this->collectReleases());
+        $tag = $releases[1]->tagName;
+
+        $diff = $this->get($this->compareEndpoint($tag, 'master'));
+        $diff = Diff::fromArray($diff);
+        $shas = array_map(function ($commit) {
+            return $commit->sha;
+        }, $diff->commits);
+
+        $pullRequests = $this->get($this->pullRequestEndpoint(), [
+            'state' => 'closed',
+            'base' => 'master',
+            'per_page' => 100,
+            'sort' => 'updated',
+            'direction' => 'desc'
+        ]);
+
+        $releasePRs = [];
+        $pullRequests = PullRequest::fromCollection($pullRequests);
+        foreach ($pullRequests as $pullRequest) {
+            /** @var PullRequest $pullRequest */
+            if (in_array($pullRequest->mergeCommitSha, $shas, true)
+                || in_array($pullRequest->head->sha, $shas, true)) {
+                $releasePRs[] = $pullRequest;
+            }
+        }
+        array_walk($releasePRs, function ($item) {
+            var_dump($item->title);
+        });
+        die;
     }
 
     /**
@@ -189,5 +232,33 @@ class Client
         ]);
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
         return $content;
+    }
+
+    public function getLastCommit()
+    {
+        $commits = $this->get($this->commitsEndpoint(), [
+            'per_page' => 1,
+        ]);
+        $commits = Commit::fromCollection($commits);
+        return array_shift($commits);
+    }
+
+    /**
+     * @return string
+     */
+    public function commitsEndpoint()
+    {
+        return '/repos/' . $this->owner . '/' . $this->repo . '/commits';
+    }
+
+    public function createTag($sha)
+    {
+        $tag = $this->post($this->tagsEndpoint(), [
+            'tag' => 'v0.0.1',
+            'message' => 'Test',
+            'type' => 'commit',
+            'object' => $sha,
+        ]);
+        var_dump($tag);
     }
 }
