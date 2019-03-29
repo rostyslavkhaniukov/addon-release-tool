@@ -11,7 +11,7 @@ class PullRequest
     public $mergedAt;
     public $head;
     public $mergeCommitSha;
-    
+
     /** @var string */
     public $htmlUrl;
     public $number;
@@ -19,7 +19,11 @@ class PullRequest
     /** @var array */
     public $labels;
 
+    /** @var string */
     public $title;
+
+    /** @var User */
+    public $author;
 
     public function __construct(array $data)
     {
@@ -30,6 +34,9 @@ class PullRequest
         $this->title = $data['title'];
         $this->htmlUrl = $data['html_url'];
         $this->labels = Label::fromCollection((array)$data['labels']);
+        $this->author = User::fromArray($data['user']);
+
+        var_dump($this->author);die;
     }
 
     public static function fromArray(array $data): PullRequest

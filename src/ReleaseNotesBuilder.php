@@ -13,24 +13,29 @@ class ReleaseNotesBuilder
      */
     public function build(array $pullRequests): string
     {
-        $parsed = array_map(function ($pullRequest) {
-            return $this->parseTitle($pullRequest->getTitle());
+        $parsed = array_map(function (PullRequest $pullRequest) {
+            return $this->parseTitle($pullRequest);
         }, $pullRequests);
 
         $parsed = collect($parsed)->groupBy('jira-issue');
 
-        var_dump($parsed);die;
+        foreach ($parsed as $key => $value) {
+            foreach ($value as $bla) {
+                var_dump($bla);die;
+            }
+        }
 
         return '';
     }
 
-    private function parseTitle(string $title)
+    private function parseTitle(PullRequest $pullRequest)
     {
-        preg_match_all('/\[(.*)\](.*)/', $title, $matches);
+        preg_match_all('/\[(.*)\](.*)/', $pullRequest->getTitle(), $matches);
         return [
             'all' => $matches[0][0],
             'jira-issue' => $matches[1][0],
             'title' => trim($matches[2][0]),
+            'labels' => $pullRequest->getLabels(),
         ];
     }
 }

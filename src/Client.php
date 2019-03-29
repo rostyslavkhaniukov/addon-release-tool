@@ -7,6 +7,7 @@ use AirSlate\Releaser\Entities\Diff;
 use AirSlate\Releaser\Entities\PullRequest;
 use AirSlate\Releaser\Entities\Release;
 use AirSlate\Releaser\Http\Client as HttpClient;
+use AirSlate\Releaser\Services\PullRequestsService;
 use GuzzleHttp\RequestOptions;
 
 /**
@@ -27,6 +28,9 @@ class Client
     /** @var HttpClient */
     private $httpClient;
 
+    /** @var PullRequestsService */
+    private $pullRequestsService;
+
     /**
      * Client constructor.
      * @param array $config
@@ -43,6 +47,15 @@ class Client
         $builder = new ReleaseNotesBuilder();
         var_dump($builder->build($prs));
         // $this->createTag($this->getLastCommit()->sha);
+    }
+
+    public function pullRequests(): PullRequestsService
+    {
+        if (!$this->pullRequestsService) {
+            $this->pullRequestsService = new PullRequestsService($this->httpClient, $this->owner);
+        }
+
+        return $this->pullRequestsService;
     }
 
     /**
@@ -131,7 +144,8 @@ class Client
     public function collectReleasePRs()
     {
         $releases = $this->collectReleases();
-        $pullRequests = $this->collectPRs();
+        $pullRequests = $this->pullRequests()->closed()->all($this->repo);
+        var_dump(count($pullRequests));
         $diff = $this->collectDiff($releases[2]);
 
 
@@ -186,23 +200,9 @@ class Client
         die;
     }
 
-    /**
-     * @return PullRequest[]
-     */
-    public function collectPRs(): array
-    {
-        $pullRequests = $this->get($this->pullRequestEndpoint(), [
-            'state' => 'closed',
-            'base' => 'master',
-            'per_page' => 20,
-            'sort' => 'updated',
-            'direction' => 'desc'
-        ]);
-        return PullRequest::fromCollection($pullRequests);
-    }
-
     public function collectReleases()
     {
+        print("Collect releases\n");
         return Release::fromCollection($this->get($this->releasesEndpoint()));
     }
 

@@ -13,15 +13,6 @@ use GuzzleHttp\RequestOptions;
 class Client extends \GuzzleHttp\Client
 {
     /**
-     * @var string
-     */
-    private $include;
-    /**
-     * @var array
-     */
-    private $filter;
-
-    /**
      * @var array
      */
     private $queryParams;
@@ -52,51 +43,11 @@ class Client extends \GuzzleHttp\Client
     }
 
     /**
-     * @param string|array $include
-     * @return Client
-     * @throws \Exception
-     */
-    public function with($include): Client
-    {
-        if (\is_array($include)) {
-            $include = implode(',', $include);
-        }
-
-        if (!\is_string($include)) {
-            throw new \InvalidArgumentException('"$include" must be a string or array value.');
-        }
-
-        $this->include = $include;
-
-        return $this;
-    }
-
-    /**
-     * @param string $key
-     * @param array|string $values
-     * @return Client
-     */
-    public function addFilter(string $key, $values): Client
-    {
-        if (\is_array($values)) {
-            $values = implode(',', $values);
-        }
-
-        if (!empty($this->filter[$key])) {
-            $this->filter[$key] .= ',' . $values;
-        } else {
-            $this->filter[$key] = $values;
-        }
-
-        return $this;
-    }
-
-    /**
      * @param string $key
      * @param $values
      * @return Client
      */
-    public function addQueryParam(string $key, $values): Client
+    public function setQueryParam(string $key, $values): Client
     {
         if (\is_array($values)) {
             $values = implode(',', $values);
@@ -108,18 +59,23 @@ class Client extends \GuzzleHttp\Client
     }
 
     /**
+     * @param array $params
+     * @return Client
+     */
+    public function setQueryParams(array $params): Client
+    {
+        $this->queryParams = array_merge($this->queryParams, $params);
+
+        return $this;
+    }
+
+    /**
      * @param array $options
      * @return array
      */
     private function resolveOptions(array $options): array
     {
-        if (null !== $this->include) {
-            $options[RequestOptions::QUERY]['include'] = $this->include;
-        }
-        if (null !== $this->filter) {
-            $options[RequestOptions::QUERY]['filter'] = $this->filter;
-        }
-        if (null !== $this->queryParams) {
+        if (!empty($this->queryParams)) {
             foreach ($this->queryParams as $param => $value) {
                 $options[RequestOptions::QUERY][$param] = $value;
             }
@@ -130,8 +86,6 @@ class Client extends \GuzzleHttp\Client
 
     private function clearOptions(): void
     {
-        $this->include = null;
-        $this->filter = null;
-        $this->queryParams = null;
+        $this->queryParams = [];
     }
 }
