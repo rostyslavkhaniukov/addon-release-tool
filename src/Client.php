@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser;
 
+use AirSlate\Releaser\Entities\Commit;
 use AirSlate\Releaser\Entities\Diff;
 use AirSlate\Releaser\Entities\PullRequest;
 use AirSlate\Releaser\Entities\Release;
@@ -12,6 +13,7 @@ use GuzzleHttp\RequestOptions;
 
 /**
  * Class Client
+ *
  * @package AirSlate\Releaser
  */
 class Client
@@ -200,18 +202,30 @@ class Client
         die;
     }
 
+    /**
+     * @return array
+     */
     public function collectReleases()
     {
         print("Collect releases\n");
         return Release::fromCollection($this->get($this->releasesEndpoint()));
     }
 
+    /**
+     * @param Release $release
+     * @return Diff
+     */
     public function collectDiff(Release $release)
     {
         $diff = $this->get($this->compareEndpoint($release, 'master'));
         return Diff::fromArray($diff);
     }
 
+    /**
+     * @param $url
+     * @param array $query
+     * @return mixed
+     */
     public function get($url, $query = [])
     {
         $response = $this->httpClient->get($url, [
@@ -251,6 +265,9 @@ class Client
         return '/repos/' . $this->owner . '/' . $this->repo . '/commits';
     }
 
+    /**
+     * @param $sha
+     */
     public function createTag($sha)
     {
         $tag = $this->post($this->tagsEndpoint(), [
