@@ -14,6 +14,9 @@ class Label
     /** @var string */
     private $name;
 
+    /** @var string */
+    private $color;
+
     /**
      * Label constructor.
      * @param array $data
@@ -21,6 +24,7 @@ class Label
     public function __construct(array $data)
     {
         $this->name = (string)$data['name'];
+        $this->color = (string)$data['color'];
     }
 
     /**
@@ -49,5 +53,13 @@ class Label
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getColor(): string
+    {
+        return $this->color;
     }
 }

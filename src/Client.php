@@ -8,7 +8,9 @@ use AirSlate\Releaser\Entities\Diff;
 use AirSlate\Releaser\Entities\PullRequest;
 use AirSlate\Releaser\Entities\Release;
 use AirSlate\Releaser\Http\Client as HttpClient;
+use AirSlate\Releaser\Services\LabelsService;
 use AirSlate\Releaser\Services\PullRequestsService;
+use AirSlate\Releaser\Services\WebhooksService;
 use GuzzleHttp\RequestOptions;
 
 /**
@@ -33,6 +35,12 @@ class Client
     /** @var PullRequestsService */
     private $pullRequestsService;
 
+    /** @var WebhooksService */
+    private $webhooksService;
+
+    /** @var LabelsService */
+    private $labelsService;
+
     /**
      * Client constructor.
      * @param array $config
@@ -45,10 +53,28 @@ class Client
 
         $this->httpClient = $this->configureClient($this->endpoint, $config);
 
-        $prs = $this->collectReleasePRs();
-        $builder = new ReleaseNotesBuilder();
-        var_dump($builder->build($prs));
+//        $prs = $this->collectReleasePRs();
+//        $builder = new ReleaseNotesBuilder();
+//        var_dump($builder->build($prs));
         // $this->createTag($this->getLastCommit()->sha);
+    }
+
+    public function webhooks(): WebhooksService
+    {
+        if (!$this->webhooksService) {
+            $this->webhooksService = new WebhooksService($this->httpClient, $this->owner);
+        }
+
+        return $this->webhooksService;
+    }
+
+    public function labels(): LabelsService
+    {
+        if (!$this->labelsService) {
+            $this->labelsService = new LabelsService($this->httpClient, $this->owner);
+        }
+
+        return $this->labelsService;
     }
 
     public function pullRequests(): PullRequestsService
