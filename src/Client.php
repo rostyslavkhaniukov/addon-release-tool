@@ -8,7 +8,12 @@ use AirSlate\Releaser\Entities\Diff;
 use AirSlate\Releaser\Entities\PullRequest;
 use AirSlate\Releaser\Entities\Release;
 use AirSlate\Releaser\Http\Client as HttpClient;
+use AirSlate\Releaser\Services\CheckRunsService;
+use AirSlate\Releaser\Services\CommitsService;
+use AirSlate\Releaser\Services\LabelsService;
 use AirSlate\Releaser\Services\PullRequestsService;
+use AirSlate\Releaser\Services\StatusesService;
+use AirSlate\Releaser\Services\WebhooksService;
 use GuzzleHttp\RequestOptions;
 
 /**
@@ -33,6 +38,21 @@ class Client
     /** @var PullRequestsService */
     private $pullRequestsService;
 
+    /** @var WebhooksService */
+    private $webhooksService;
+
+    /** @var LabelsService */
+    private $labelsService;
+
+    /** @var CommitsService */
+    private $commitsService;
+
+    /** @var StatusesService */
+    private $statusesService;
+
+    /** @var CheckRunsService */
+    private $checkRunsService;
+
     /**
      * Client constructor.
      * @param array $config
@@ -41,14 +61,25 @@ class Client
     {
         $this->endpoint = $config['endpoint'] ?? 'https://api.github.com';
         $this->owner = $config['owner'];
-        $this->repo = $config['repo'];
-
         $this->httpClient = $this->configureClient($this->endpoint, $config);
+    }
 
-        $prs = $this->collectReleasePRs();
-        $builder = new ReleaseNotesBuilder();
-        var_dump($builder->build($prs));
-        // $this->createTag($this->getLastCommit()->sha);
+    public function webhooks(): WebhooksService
+    {
+        if (!$this->webhooksService) {
+            $this->webhooksService = new WebhooksService($this->httpClient, $this->owner);
+        }
+
+        return $this->webhooksService;
+    }
+
+    public function labels(): LabelsService
+    {
+        if (!$this->labelsService) {
+            $this->labelsService = new LabelsService($this->httpClient, $this->owner);
+        }
+
+        return $this->labelsService;
     }
 
     public function pullRequests(): PullRequestsService
@@ -58,6 +89,33 @@ class Client
         }
 
         return $this->pullRequestsService;
+    }
+
+    public function commits(): CommitsService
+    {
+        if (!$this->commitsService) {
+            $this->commitsService = new CommitsService($this->httpClient, $this->owner);
+        }
+
+        return $this->commitsService;
+    }
+
+    public function statuses(): StatusesService
+    {
+        if (!$this->statusesService) {
+            $this->statusesService = new StatusesService($this->httpClient, $this->owner);
+        }
+
+        return $this->statusesService;
+    }
+
+    public function checkRuns(): CheckRunsService
+    {
+        if (!$this->checkRunsService) {
+            $this->checkRunsService = new CheckRunsService($this->httpClient, $this->owner);
+        }
+
+        return $this->checkRunsService;
     }
 
     /**
@@ -107,33 +165,6 @@ class Client
     private function prepareBaserUri(string $baseUri): string
     {
         return rtrim($baseUri, '/') . '/';
-    }
-
-    public function pullRequestEndpoint()
-    {
-          return '/repos/' . $this->owner . '/' . $this->repo . '/pulls';
-    }
-
-    public function releasesEndpoint()
-    {
-        return '/repos/' . $this->owner . '/' . $this->repo . '/releases';
-    }
-
-    /**
-     * @return string
-     */
-    public function tagsEndpoint()
-    {
-        return '/repos/' . $this->owner . '/' . $this->repo . '/git/tags';
-    }
-
-    public function compareEndpoint($branch1, $branch2)
-    {
-        if ($branch1 instanceof Release) {
-            $branch1 = $branch1->tagName;
-        }
-
-        return '/repos/' . $this->owner . '/' . $this->repo . '/compare/' . $branch1 . '...' . $branch2;
     }
 
     public function getPRCommits()
@@ -255,14 +286,6 @@ class Client
         ]);
         $commits = Commit::fromCollection($commits);
         return array_shift($commits);
-    }
-
-    /**
-     * @return string
-     */
-    public function commitsEndpoint()
-    {
-        return '/repos/' . $this->owner . '/' . $this->repo . '/commits';
     }
 
     /**
