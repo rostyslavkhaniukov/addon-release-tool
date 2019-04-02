@@ -1,5 +1,5 @@
 {
-    "name": "airslateinc/addon-releaser",
+    "name": "rostyslavkhaniukov/github-client",
     "description": "AirSlate client library.",
     "type": "library",
     "autoload": {
