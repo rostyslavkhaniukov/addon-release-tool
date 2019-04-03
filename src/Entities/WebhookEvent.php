@@ -4,13 +4,16 @@ declare(strict_types=1);
 namespace AirSlate\Releaser\Entities;
 
 /**
- * Class User
+ * Class WebhookEvent
  * @package AirSlate\Releaser\Entities
  */
-class User
+class WebhookEvent
 {
-    /** @var mixed */
-    public $login;
+    /** @var string */
+    public $action;
+
+    /** @var Review */
+    public $review;
 
     /**
      * Release constructor.
@@ -18,14 +21,15 @@ class User
      */
     public function __construct(array $data)
     {
-        $this->login = $data['login'];
+        $this->action = $data['action'];
+        $this->review = Review::fromArray($data['review']);
     }
 
     /**
      * @param array $data
-     * @return User
+     * @return WebhookEvent
      */
-    public static function fromArray(array $data): User
+    public static function fromArray(array $data): WebhookEvent
     {
         return new static($data);
     }

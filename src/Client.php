@@ -13,6 +13,7 @@ use AirSlate\Releaser\Services\CommitsService;
 use AirSlate\Releaser\Services\LabelsService;
 use AirSlate\Releaser\Services\PullRequestsService;
 use AirSlate\Releaser\Services\StatusesService;
+use AirSlate\Releaser\Services\WebhookProcessorService;
 use AirSlate\Releaser\Services\WebhooksService;
 use GuzzleHttp\RequestOptions;
 
@@ -53,6 +54,9 @@ class Client
     /** @var CheckRunsService */
     private $checkRunsService;
 
+    /** @var WebhookProcessorService */
+    private $webhooksProcessorService;
+
     /**
      * Client constructor.
      * @param array $config
@@ -62,6 +66,15 @@ class Client
         $this->endpoint = $config['endpoint'] ?? 'https://api.github.com';
         $this->owner = $config['owner'];
         $this->httpClient = $this->configureClient($this->endpoint, $config);
+    }
+
+    public function webhookProcessorService()
+    {
+        if (!$this->webhooksProcessorService) {
+            $this->webhooksProcessorService = new WebhookProcessorService($this->httpClient, $this->owner);
+        }
+
+        return $this->webhooksProcessorService;
     }
 
     public function webhooks(): WebhooksService
