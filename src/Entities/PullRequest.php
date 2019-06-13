@@ -35,8 +35,6 @@ class PullRequest
         $this->htmlUrl = $data['html_url'];
         $this->labels = Label::fromCollection((array)$data['labels']);
         $this->author = User::fromArray($data['user']);
-
-        var_dump($this->author);die;
     }
 
     public static function fromArray(array $data): PullRequest

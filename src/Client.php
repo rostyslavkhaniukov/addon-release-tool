@@ -95,10 +95,10 @@ class Client
         return $this->labelsService;
     }
 
-    public function pullRequests(): PullRequestsService
+    public function pullRequests(string $repository): PullRequestsService
     {
         if (!$this->pullRequestsService) {
-            $this->pullRequestsService = new PullRequestsService($this->httpClient, $this->owner);
+            $this->pullRequestsService = new PullRequestsService($this->httpClient, $this->owner, $repository);
         }
 
         return $this->pullRequestsService;

@@ -15,14 +15,27 @@ class Review
     /** @var User */
     public $user;
 
+    /** @var string */
+    public $submitted_at;
+
     /**
      * Release constructor.
      * @param array $data
      */
     public function __construct(array $data)
     {
+
         $this->state = $data['state'];
         $this->user = User::fromArray($data['user']);
+        $this->submitted_at = $data['submitted_at'];
+    }
+
+    /**
+     * @return User
+     */
+    public function getUser(): User
+    {
+        return $this->user;
     }
 
     /**

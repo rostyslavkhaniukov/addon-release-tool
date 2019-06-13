@@ -15,7 +15,7 @@ class Client extends \GuzzleHttp\Client
     /**
      * @var array
      */
-    private $queryParams;
+    private $queryParams = [];
 
     /**
      * @inheritdoc

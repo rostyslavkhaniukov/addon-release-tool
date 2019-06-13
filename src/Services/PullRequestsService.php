@@ -3,14 +3,19 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser\Services;
 
+use AirSlate\Releaser\Entities\Commit;
 use AirSlate\Releaser\Entities\PullRequest;
+use AirSlate\Releaser\Entities\Review;
 use AirSlate\Releaser\Http\Client as HttpClient;
 
 class PullRequestsService extends AbstractService
 {
-    public function __construct(HttpClient $client, string $owner)
+    private $repository;
+
+    public function __construct(HttpClient $client, string $owner, string $repository)
     {
         parent::__construct($client, $owner);
+        $this->repository = $repository;
 
         $this->client->setQueryParams([
             'state' => 'opened',
@@ -29,12 +34,11 @@ class PullRequestsService extends AbstractService
     }
 
     /**
-     * @param string $repository
      * @return PullRequest[]
      */
-    public function all(string $repository): array
+    public function all(): array
     {
-        $response = $this->client->get("/repos/{$this->owner}/{$repository}/pulls");
+        $response = $this->client->get("/repos/{$this->owner}/{$this->repository}/pulls");
 
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
 
@@ -43,6 +47,23 @@ class PullRequestsService extends AbstractService
 
     public function commits(int $id)
     {
-        $response = $this->client->get("/repos/{$this->owner}/{$repository}/pulls/{$id}/commits");
+        $response = $this->client->get("/repos/{$this->owner}/{$this->repository}/pulls/{$id}/commits");
+
+        $content = \GuzzleHttp\json_decode($response->getBody(), true);
+
+        return Commit::fromArray($content);
+    }
+
+    /**
+     * @param int $id
+     * @return Review[]
+     */
+    public function reviews(int $id)
+    {
+        $response = $this->client->get("/repos/{$this->owner}/{$this->repository}/pulls/{$id}/reviews");
+
+        $content = \GuzzleHttp\json_decode($response->getBody(), true);
+
+        return Review::fromCollection($content);
     }
 }

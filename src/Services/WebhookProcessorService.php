@@ -23,7 +23,7 @@ class WebhookProcessorService extends AbstractService
 
     public function bla()
     {
-        $bla = file_get_contents(__DIR__ . '/../../fixtures/approved.json');
+        $bla = file_get_contents(__DIR__ . '/../../fixtures/rejected.json');
         $bla = json_decode($bla, true);
         $bla = WebhookEvent::fromArray($bla);
         var_dump($bla);
