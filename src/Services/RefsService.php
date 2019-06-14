@@ -40,4 +40,41 @@ class RefsService extends AbstractService
 
         return Ref::fromArray($content);
     }
+
+    /**
+     * @param string $owner
+     * @param string $repository
+     * @param string $ref
+     * @param string $commitSha
+     * @return Ref
+     */
+    public function updateRef(string $owner, string $repository, string $ref, string $commitSha): Ref
+    {
+        $response = $this->client->patch("/repos/{$owner}/{$repository}/git/refs/{$ref}", [
+            RequestOptions::JSON => [
+                'sha' => $commitSha,
+                'force' => false,
+            ]
+        ]);
+
+        $content = \GuzzleHttp\json_decode($response->getBody(), true);
+
+        var_dump($content);die;
+        return Ref::fromArray($content);
+    }
+
+    /**
+     * @param string $owner
+     * @param string $repository
+     * @return Ref
+     */
+    public function all(string $owner, string $repository): Ref
+    {
+        $response = $this->client->get("/repos/{$owner}/{$repository}/git/refs");
+
+        $content = \GuzzleHttp\json_decode($response->getBody(), true);
+
+        var_dump($content);die;
+        return Ref::fromArray($content);
+    }
 }

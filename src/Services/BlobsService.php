@@ -5,6 +5,7 @@ namespace AirSlate\Releaser\Services;
 
 use AirSlate\Releaser\Entities\Branch;
 use AirSlate\Releaser\Entities\File;
+use AirSlate\Releaser\Entities\Git\Blob;
 use AirSlate\Releaser\Entities\Label;
 use AirSlate\Releaser\Http\Client as HttpClient;
 use GuzzleHttp\RequestOptions;
@@ -27,9 +28,9 @@ class BlobsService extends AbstractService
      * @param string $repository
      * @param string $content
      * @param string $encoding
-     * @return Branch
+     * @return Blob
      */
-    public function put(string $owner, string $repository, string $content, string $encoding): Branch
+    public function put(string $owner, string $repository, string $content, string $encoding): Blob
     {
         $response = $this->client->post("/repos/{$owner}/{$repository}/git/blobs", [
             RequestOptions::JSON => [
@@ -40,8 +41,6 @@ class BlobsService extends AbstractService
 
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
 
-        var_dump($content);die;
-
-        return Branch::fromArray($content);
+        return Blob::fromArray($content);
     }
 }
