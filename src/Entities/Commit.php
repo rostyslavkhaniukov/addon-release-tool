@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace AirSlate\Releaser\Entities;
 
@@ -12,11 +13,18 @@ class Commit
     public $message;
     public $title;
 
+    /** @var Git\Commit */
+    public $commit;
+
+    /**
+     * @param array $data
+     */
     public function __construct(array $data)
     {
         $this->sha = $data['sha'];
         $this->title = $data['title'] ?? '';
         $this->message = $data['commit']['message'] ?? '';
+        $this->commit = Git\Commit::fromArray($data['commit']);
     }
 
     public static function fromArray(array $data): Commit

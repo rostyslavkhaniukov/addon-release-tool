@@ -8,11 +8,16 @@ use AirSlate\Releaser\Entities\Diff;
 use AirSlate\Releaser\Entities\PullRequest;
 use AirSlate\Releaser\Entities\Release;
 use AirSlate\Releaser\Http\Client as HttpClient;
+use AirSlate\Releaser\Services\BlobsService;
+use AirSlate\Releaser\Services\BranchesService;
 use AirSlate\Releaser\Services\CheckRunsService;
 use AirSlate\Releaser\Services\CommitsService;
+use AirSlate\Releaser\Services\ContentsService;
 use AirSlate\Releaser\Services\LabelsService;
 use AirSlate\Releaser\Services\PullRequestsService;
+use AirSlate\Releaser\Services\RefsService;
 use AirSlate\Releaser\Services\StatusesService;
+use AirSlate\Releaser\Services\TreesService;
 use AirSlate\Releaser\Services\WebhookProcessorService;
 use AirSlate\Releaser\Services\WebhooksService;
 use GuzzleHttp\RequestOptions;
@@ -57,6 +62,21 @@ class Client
     /** @var WebhookProcessorService */
     private $webhooksProcessorService;
 
+    /** @var ContentsService */
+    private $contentsService;
+
+    /** @var BranchesService */
+    private $branchesService;
+
+    /** @var RefsService */
+    private $refsService;
+
+    /** @var BlobsService */
+    private $blobsService;
+
+    /** @var TreesService */
+    private $treesService;
+
     /**
      * Client constructor.
      * @param array $config
@@ -95,6 +115,33 @@ class Client
         return $this->labelsService;
     }
 
+    public function branches(): BranchesService
+    {
+        if (!$this->branchesService) {
+            $this->branchesService = new BranchesService($this->httpClient);
+        }
+
+        return $this->branchesService;
+    }
+
+    public function blobs(): BlobsService
+    {
+        if (!$this->blobsService) {
+            $this->blobsService = new BlobsService($this->httpClient);
+        }
+
+        return $this->blobsService;
+    }
+
+    public function refs(): RefsService
+    {
+        if (!$this->refsService) {
+            $this->refsService = new RefsService($this->httpClient);
+        }
+
+        return $this->refsService;
+    }
+
     public function pullRequests(string $repository): PullRequestsService
     {
         if (!$this->pullRequestsService) {
@@ -104,6 +151,15 @@ class Client
         return $this->pullRequestsService;
     }
 
+    public function contents(): ContentsService
+    {
+        if (!$this->contentsService) {
+            $this->contentsService = new ContentsService($this->httpClient);
+        }
+
+        return $this->contentsService;
+    }
+
     public function commits(): CommitsService
     {
         if (!$this->commitsService) {
@@ -111,6 +167,15 @@ class Client
         }
 
         return $this->commitsService;
+    }
+
+    public function trees(): TreesService
+    {
+        if (!$this->treesService) {
+            $this->treesService = new TreesService($this->httpClient);
+        }
+
+        return $this->treesService;
     }
 
     public function statuses(): StatusesService
