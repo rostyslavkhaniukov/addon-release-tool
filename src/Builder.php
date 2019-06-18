@@ -97,7 +97,8 @@ class Builder
                         'sha' => $file->getBlob()->getSha(),
                     ];
                 }, $this->stagedFiles),
-            ]);
+            ]
+        );
 
         $this->newCommit = $this->client->commits()->commit(
             $this->owner,
@@ -124,7 +125,7 @@ class Builder
         return $this;
     }
 
-    public function makePull(string $name, string $body)
+    public function makePR(string $name, string $body)
     {
         $this->client->pullRequests('')->create(
             $this->owner,
