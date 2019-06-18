@@ -3,16 +3,18 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser;
 
+use AirSlate\Releaser\Entities\Branch;
+use AirSlate\Releaser\Entities\Git;
+use AirSlate\Releaser\Entities\Ref;
 use AirSlate\Releaser\Enums\FileMode;
 use AirSlate\Releaser\Enums\LeafType;
+use AirSlate\Releaser\Models\StagedFile;
+use Closure;
 
 class Builder
 {
     /** @var Client */
     private $client;
-
-    /** @var string */
-    private $fileBuffer;
 
     /** @var string */
     private $repository;
@@ -23,14 +25,31 @@ class Builder
     /** @var string */
     private $baseBranch;
 
-    /** @var Entities\Ref */
+    /** @var Ref */
     private $branchRef;
 
-    /** @var string */
-    private $filePath;
+    /** @var Branch */
+    private $baseBranchEntity;
 
-    /** @var Entities\Git\Blob */
-    private $blob;
+    /** @var string */
+    private $branchName;
+
+    /** @var Git\Commit */
+    private $newCommit;
+
+    /** @var StagedFile[] */
+    private $stagedFiles;
+
+    public function step(Closure $closure)
+    {
+        $fileProcessor = new FileProcessor($this->client, $this->owner, $this->repository);
+
+        $process = $closure($fileProcessor);
+
+        $this->stagedFiles[] = $process->put();
+
+        return $this;
+    }
 
     public function __construct(Client $client, string $owner, string $repository)
     {
@@ -48,70 +67,72 @@ class Builder
 
     public function branch(string $branch)
     {
-        $baseBranchEntity = $this->client->branches()->get($this->owner, $this->repository, $this->baseBranch);
+        $this->branchName = $branch;
+        $this->baseBranchEntity = $this->client->branches()->get($this->owner, $this->repository, $this->baseBranch);
 
         $this->branchRef = $this->client->refs()->createRef(
             $this->owner,
             $this->repository,
             "refs/heads/{$branch}",
-            $baseBranchEntity->commit->sha
+            $this->baseBranchEntity->commit->sha
         );
 
         return $this;
     }
 
-    public function commit()
+    public function commit(string $message)
     {
         $commit = $this->client->commits()->get($this->repository, $this->branchRef->objectSha);
 
-        $this->client->trees()->createTree(
+        $tree = $this->client->trees()->createTree(
             $this->owner,
             $this->repository,
             [
                 'base_tree' => $commit->commit->tree->getSha(),
-                'tree' => [
-                    [
-                        'path' => $this->filePath,
+                'tree' => array_map(function (StagedFile $file) {
+                    return [
+                        'path' => $file->getFilePath(),
                         'mode' => FileMode::BLOB,
                         'type' => LeafType::BLOB,
-                        'sha' => $this->blob->getSha(),
-                    ]
-                ],
+                        'sha' => $file->getBlob()->getSha(),
+                    ];
+                }, $this->stagedFiles),
             ]);
 
-        $newCommit = $this->client->commits()->commit(
+        $this->newCommit = $this->client->commits()->commit(
             $this->owner,
             $this->repository,
-            'f15743fbdbb20659092d10f8c53b8928136940cd',
+            $tree->getSha(),
             [
-                $s->commit->sha,
-            ]
+                $this->baseBranchEntity->commit->sha,
+            ],
+            $message
         );
-    }
-
-    public function take(string $file): self
-    {
-        $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
-        $this->filePath = $file;
-        $this->fileBuffer = $content->getDecoded();
 
         return $this;
     }
 
-    public function replace(string $pattern, string $replacement)
+    public function push()
     {
-        $this->fileBuffer = preg_replace($pattern, $replacement, $this->fileBuffer);
-
-        return $this;
-    }
-
-    public function put()
-    {
-        $this->blob = $this->client->blobs()->put(
+        $this->client->refs()->updateRef(
             $this->owner,
             $this->repository,
-            base64_encode($this->fileBuffer),
-            'base64'
+            "heads/{$this->branchName}",
+            $this->newCommit->getSha()
+        );
+
+        return $this;
+    }
+
+    public function makePull(string $name, string $body)
+    {
+        $this->client->pullRequests('')->create(
+            $this->owner,
+            $this->repository,
+            $name,
+            $body,
+            $this->branchName,
+            $this->baseBranch
         );
     }
 }

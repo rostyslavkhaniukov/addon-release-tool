@@ -26,11 +26,15 @@ class Commit
     /** @var int */
     private $commentCount;
 
+    /** @var string|null */
+    private $sha;
+
     /**
      * @param array $data
      */
     public function __construct(array $data)
     {
+        $this->sha = $data['sha'] ?? null;
         $this->author = $data['author'] ?? [];
         $this->commiter = $data['commiter'] ?? [];
         $this->message = $data['message'] ?? '';
@@ -46,5 +50,21 @@ class Commit
     public static function fromArray(array $data): Commit
     {
         return new static($data);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSha(): ?string
+    {
+        return $this->sha;
+    }
+
+    /**
+     * @param string|null $sha
+     */
+    public function setSha(?string $sha): void
+    {
+        $this->sha = $sha;
     }
 }

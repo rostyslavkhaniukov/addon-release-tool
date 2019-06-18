@@ -7,6 +7,7 @@ use AirSlate\Releaser\Entities\Commit;
 use AirSlate\Releaser\Entities\PullRequest;
 use AirSlate\Releaser\Entities\Review;
 use AirSlate\Releaser\Http\Client as HttpClient;
+use GuzzleHttp\RequestOptions;
 
 class PullRequestsService extends AbstractService
 {
@@ -52,6 +53,22 @@ class PullRequestsService extends AbstractService
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
 
         return Commit::fromArray($content);
+    }
+
+    public function create(string $owner, string $repository, string $title, string $body, string $head, string $base)
+    {
+        $response = $this->client->post("/repos/{$owner}/{$repository}/pulls", [
+            RequestOptions::JSON => [
+                'title' => $title,
+                'body' => $body,
+                'head' => $head,
+                'base' => $base,
+            ]
+        ]);
+
+        $content = \GuzzleHttp\json_decode($response->getBody(), true);
+
+        //return Commit::fromArray($content);
     }
 
     /**

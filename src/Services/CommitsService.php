@@ -6,6 +6,7 @@ namespace AirSlate\Releaser\Services;
 use AirSlate\Releaser\Entities\Commit;
 use AirSlate\Releaser\Entities\Label;
 use AirSlate\Releaser\Entities\Ref;
+use AirSlate\Releaser\Entities\Git;
 use AirSlate\Releaser\Http\Client as HttpClient;
 use GuzzleHttp\RequestOptions;
 
@@ -61,13 +62,14 @@ class CommitsService extends AbstractService
      * @param string $repository
      * @param string $treeSha
      * @param array $parents
-     * @return Ref
+     * @param string $message
+     * @return Git\Commit
      */
-    public function commit(string $owner, string $repository, string $treeSha, array $parents): Ref
+    public function commit(string $owner, string $repository, string $treeSha, array $parents, string $message): Git\Commit
     {
         $response = $this->client->post("/repos/{$owner}/{$repository}/git/commits", [
             RequestOptions::JSON => [
-                'message' => 'test',
+                'message' => $message,
                 'tree' => $treeSha,
                 'parents' => $parents
             ]
@@ -75,7 +77,6 @@ class CommitsService extends AbstractService
 
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
 
-        var_dump($content);die;
-        return Ref::fromArray($content);
+        return Git\Commit::fromArray($content);
     }
 }

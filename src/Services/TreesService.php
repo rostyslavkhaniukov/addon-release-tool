@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser\Services;
 
-use AirSlate\Releaser\Entities\Ref;
+use AirSlate\Releaser\Entities\Git\Tree;
 use AirSlate\Releaser\Http\Client as HttpClient;
 use GuzzleHttp\RequestOptions;
 
@@ -24,9 +24,9 @@ class TreesService extends AbstractService
      * @param string $owner
      * @param string $repository
      * @param array $tree
-     * @return Ref
+     * @return Tree
      */
-    public function createTree(string $owner, string $repository, array $tree): Ref
+    public function createTree(string $owner, string $repository, array $tree): Tree
     {
         $response = $this->client->post("/repos/{$owner}/{$repository}/git/trees", [
             RequestOptions::JSON => $tree
@@ -34,7 +34,6 @@ class TreesService extends AbstractService
 
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
 
-        var_dump($content);die;
-        return Ref::fromArray($content);
+        return Tree::fromArray($content);
     }
 }
