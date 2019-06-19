@@ -16,6 +16,7 @@ use AirSlate\Releaser\Services\ContentsService;
 use AirSlate\Releaser\Services\LabelsService;
 use AirSlate\Releaser\Services\PullRequestsService;
 use AirSlate\Releaser\Services\RefsService;
+use AirSlate\Releaser\Services\SearchService;
 use AirSlate\Releaser\Services\StatusesService;
 use AirSlate\Releaser\Services\TreesService;
 use AirSlate\Releaser\Services\WebhookProcessorService;
@@ -77,6 +78,9 @@ class Client
     /** @var TreesService */
     private $treesService;
 
+    /** @var SearchService */
+    private $searchService;
+
     /**
      * Client constructor.
      * @param array $config
@@ -104,6 +108,15 @@ class Client
         }
 
         return $this->webhooksService;
+    }
+
+    public function search(): SearchService
+    {
+        if (!$this->searchService) {
+            $this->searchService = new SearchService($this->httpClient, $this->owner);
+        }
+
+        return $this->searchService;
     }
 
     public function labels(): LabelsService
@@ -142,10 +155,10 @@ class Client
         return $this->refsService;
     }
 
-    public function pullRequests(string $repository): PullRequestsService
+    public function pullRequests(): PullRequestsService
     {
         if (!$this->pullRequestsService) {
-            $this->pullRequestsService = new PullRequestsService($this->httpClient, $this->owner, $repository);
+            $this->pullRequestsService = new PullRequestsService($this->httpClient, $this->owner);
         }
 
         return $this->pullRequestsService;

@@ -38,7 +38,7 @@ class Commit
         $this->author = $data['author'] ?? [];
         $this->commiter = $data['commiter'] ?? [];
         $this->message = $data['message'] ?? '';
-        $this->tree = Tree::fromArray($data['tree']);
+        $this->tree = Tree::fromArray($data['tree'] ?? []);
         $this->url = $data['url'] ?? '';
         $this->commentCount = $data['comment_count'] ?? 0;
     }

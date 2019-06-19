@@ -23,7 +23,7 @@ class Commit
         $this->sha = $data['sha'];
         $this->title = $data['title'] ?? '';
         $this->message = $data['commit']['message'] ?? '';
-        $this->commit = Git\Commit::fromArray($data['commit']);
+        $this->commit = Git\Commit::fromArray($data['commit'] ?? []);
     }
 
     /**

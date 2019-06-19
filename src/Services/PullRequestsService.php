@@ -11,12 +11,9 @@ use GuzzleHttp\RequestOptions;
 
 class PullRequestsService extends AbstractService
 {
-    private $repository;
-
-    public function __construct(HttpClient $client, string $owner, string $repository)
+    public function __construct(HttpClient $client, string $owner)
     {
         parent::__construct($client, $owner);
-        $this->repository = $repository;
 
         $this->client->setQueryParams([
             'state' => 'opened',
@@ -35,20 +32,26 @@ class PullRequestsService extends AbstractService
     }
 
     /**
+     * @param string $repository
      * @return PullRequest[]
      */
-    public function all(): array
+    public function all(string $repository): array
     {
-        $response = $this->client->get("/repos/{$this->owner}/{$this->repository}/pulls");
+        $response = $this->client->get("/repos/{$this->owner}/{$repository}/pulls");
 
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
 
         return PullRequest::fromCollection($content);
     }
 
-    public function commits(int $id)
+    /**
+     * @param string $repository
+     * @param int $pullId
+     * @return Commit
+     */
+    public function commits(string $repository, int $pullId): Commit
     {
-        $response = $this->client->get("/repos/{$this->owner}/{$this->repository}/pulls/{$id}/commits");
+        $response = $this->client->get("/repos/{$this->owner}/{$repository}/pulls/{$pullId}/commits");
 
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
 
@@ -72,12 +75,13 @@ class PullRequestsService extends AbstractService
     }
 
     /**
+     * @param string $repository
      * @param int $id
      * @return Review[]
      */
-    public function reviews(int $id)
+    public function reviews(string $repository, int $id)
     {
-        $response = $this->client->get("/repos/{$this->owner}/{$this->repository}/pulls/{$id}/reviews");
+        $response = $this->client->get("/repos/{$this->owner}/{$repository}/pulls/{$id}/reviews");
 
         $content = \GuzzleHttp\json_decode($response->getBody(), true);
 
