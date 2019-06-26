@@ -43,6 +43,17 @@ class FileProcessor
         return $this;
     }
 
+    public function findInJson(string $path): string
+    {
+        $json = json_decode($this->fileBuffer, true);
+        $value = $json['packages'];
+        $package = array_filter($value, function ($package) use ($path) {
+            return $package['name'] === $path;
+        });
+
+        return (string)$package[0]['version'];
+    }
+
     public function replace(string $pattern, string $replacement)
     {
         $this->fileBuffer = preg_replace($pattern, $replacement, $this->fileBuffer);

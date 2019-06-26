@@ -14,6 +14,9 @@ class Tree
     /** @var string */
     private $url;
 
+    /* @var array */
+    private $tree;
+
     /**
      * @param array $data
      */
@@ -21,6 +24,7 @@ class Tree
     {
         $this->sha = $data['sha'] ?? '';
         $this->url = $data['url'] ?? '';
+        $this->tree = $data['tree'] ?? [];
     }
 
     /**
@@ -62,5 +66,21 @@ class Tree
     public function setSha(string $sha): void
     {
         $this->sha = $sha;
+    }
+
+    /**
+     * @return array
+     */
+    public function getTree(): array
+    {
+        return $this->tree;
+    }
+
+    /**
+     * @param array $tree
+     */
+    public function setTree(array $tree): void
+    {
+        $this->tree = $tree;
     }
 }

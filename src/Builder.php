@@ -51,6 +51,15 @@ class Builder
         return $this;
     }
 
+    public function collect(Closure $closure)
+    {
+        $fileProcessor = new FileProcessor($this->client, $this->owner, $this->repository);
+
+        $process = $closure($fileProcessor);
+
+        return $process;
+    }
+
     public function __construct(Client $client, string $owner, string $repository)
     {
         $this->client = $client;

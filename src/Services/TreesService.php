@@ -36,4 +36,23 @@ class TreesService extends AbstractService
 
         return Tree::fromArray($content);
     }
+
+    /**
+     * @param string $owner
+     * @param string $repository
+     * @param string $treeSha
+     * @return Tree
+     */
+    public function get(string $owner, string $repository, string $treeSha): Tree
+    {
+        $response = $this->client->get("/repos/{$owner}/{$repository}/git/trees/{$treeSha}", [
+            RequestOptions::QUERY => [
+                'recursive' => '1',
+            ],
+        ]);
+
+        $content = \GuzzleHttp\json_decode($response->getBody(), true);
+
+        return Tree::fromArray($content);
+    }
 }

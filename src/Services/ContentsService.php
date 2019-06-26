@@ -34,4 +34,11 @@ class ContentsService extends AbstractService
 
         return File::fromArray($content);
     }
+
+    public function getArchiveLink(string $owner, string $repository)
+    {
+        $response = $this->client->get("/repos/{$owner}/{$repository}/zipball");
+
+        file_put_contents('1.zip', $response->getBody()->getContents());
+    }
 }
