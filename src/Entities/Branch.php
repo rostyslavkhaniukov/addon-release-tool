@@ -6,24 +6,28 @@ namespace AirSlate\Releaser\Entities;
 /**
  * @package AirSlate\Releaser\Entities
  */
-class Diff
+class Branch
 {
-    /** @var array */
-    public $commits;
+    /** @var Commit */
+    public $commit;
+
+    /** @var string */
+    private $name;
 
     /**
      * @param array $data
      */
     public function __construct(array $data)
     {
-        $this->commits = Commit::fromCollection($data['commits']);
+        $this->name = $data['name'] ?? '';
+        $this->commit = Commit::fromArray($data['commit']);
     }
 
     /**
      * @param array $data
-     * @return Diff
+     * @return Branch
      */
-    public static function fromArray(array $data): Diff
+    public static function fromArray(array $data): Branch
     {
         return new static($data);
     }

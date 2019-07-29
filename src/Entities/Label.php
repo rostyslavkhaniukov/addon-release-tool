@@ -28,7 +28,7 @@ class Label
     {
         $this->name = (string)$data['name'];
         $this->color = (string)$data['color'];
-        $this->description = (string)$data['description'];
+        $this->description = (string)($data['description'] ?? '');
     }
 
     /**

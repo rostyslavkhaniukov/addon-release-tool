@@ -3,66 +3,101 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+use AirSlate\Releaser\Builder;
 use AirSlate\Releaser\Client;
+use AirSlate\Releaser\FileProcessor;
 
 $client = new Client([
     'owner' => 'airslateinc',
     'token' => '',
 ]);
 
-function addLabel(Client $client, $newLabel)
-{
-    $addons = [
-        'google-spreadsheets-postfinish-addon',
-        'google-spreadsheets-watcher-addon',
-        'webhook-addon',
-        'notification-addon',
-        'prefill-from-source-addons',
-        'google-spreadsheets-duplex-addon',
-        'jira-addon',
-        'revoke-access-addon',
-        'dropdown-options-prefill-addon',
-        'slate-prefill-addon',
-        'document-prefill-addon',
-        'slack-notifier-addon',
-        'send-slate-addon',
-        'change-order-addon',
-        'roles-management-addon',
-        'roles-users-management-addon',
-        'packet-delete-addon',
-        'set-packet-name-addon',
-        'weekly-reminder-addon',
-        'google-calendar-addon',
-        'lock-fields-addon',
-        'sms-notifier-addon',
-    ];
+/*$addons = [
+    'prefill-from-source-addons',
+    'audit-trail-addon',
+    'change-order-addon',
+    'document-prefill-addon',
+    'dropdown-options-prefill-addon',
+    'google-calendar-addon',
+    'google-spreadsheets-duplex-addon',
+    'google-spreadsheets-postfinish-addon',
+    'google-spreadsheets-watcher-addon',
+    'jira-addon',
+    'lock-slate-bot',
+    'notification-addon',
+    'export-to-source-addons',
+    'packet-delete-addon',
+    'recipient-to-role-addon',
+    'revoke-access-addon',
+    'roles-users-management-addon',
+    'send-slate-addon',
+    'set-packet-name-addon',
+    'slack-notifier-addon',
+    'slate-prefill-addon',
+    'smartsheet-export-addon',
+    'sms-notifier-addon',
+    'tags-addon',
+    'webhook-addon',
+    'weekly-reminder-addon',
+];*/
 
-    foreach ($addons as $addon) {
-        $labels = $client->labels()->all($addon);
-        $found = false;
-        foreach ($labels as $label) {
-            if ($label->getName() === $newLabel['name']) {
-                $found = true;
-                if ($label->getColor() !== $newLabel['color']
-                    || $label->getDescription() !== $newLabel['description']) {
-                    $client->labels()->update($addon, $label->getName(), $newLabel['color'], $newLabel['description']);
-                }
-            }
-        }
-        if (!$found) {
-            $client->labels()->create($addon, $newLabel['name'], $newLabel['color'], $newLabel['description']);
-        }
+$addons = [
+    'prefill-from-source-addons',
+];
+
+/*$branch = $client->branches()->get('airslateinc', $addons[0], 'master');
+$commit = $client->commits()->get($addons[0], $branch->commit->sha);
+$tree = $client->trees()->get('airslateinc', $addons[0], $commit->commit->tree->getSha());
+
+foreach ($tree->getTree() as $item) {
+    if (pathinfo($item['path'])['extension'] === 'php') {
+        echo $item['path'] . "\n";
     }
 }
 
-addLabel($client, [
-    'name' => 'approved',
-    'color' => '008672',
-    'description' => 'Approved by applications and platform teams',
-]);
+$client->contents()->getArchiveLink('airslateinc', $addons[0]);*/
 
-addLabel($client, [
-    'name' => 'waiting for platform review',
-    'color' => '1d76db',
-    'description' => 'Approved by applications team and waiting for platform team',
-]);
+function getDirContents($dir, &$results = array()){
+    $files = scandir($dir);
+
+    foreach($files as $key => $value){
+        $path = realpath($dir.DIRECTORY_SEPARATOR.$value);
+        if(!is_dir($path)) {
+            $results[] = $path;
+        } else if($value != "." && $value != "..") {
+            getDirContents($path, $results);
+        }
+    }
+
+    return $results;
+}
+
+$a = getDirContents('airslateinc-prefill-from-source-addons-44e0727c74581f57a8f1fdc0f015f6a92c512a15');
+$a = array_filter($a, function ($b) {
+    $c = pathinfo($b);
+
+    $ll = 'airslateinc-prefill-from-source-addons-44e0727c74581f57a8f1fdc0f015f6a92c512a15';
+    $pos = mb_strpos($c['dirname'], $ll) + mb_strlen($ll) + 1;
+    $d = mb_substr($c['dirname'], $pos);
+    $ddd = explode(DIRECTORY_SEPARATOR, $d);
+
+    return $c['extension'] === 'php' && $ddd[0] === 'app';
+});
+var_dump($a);
+
+/*$info = [];
+foreach ($addons as $addon) {
+    $info[$addon] = (new Builder($client, 'airslateinc', $addon))
+        ->collect(function (FileProcessor $file) {
+            return $file
+                ->take('composer.lock')
+                ->findInJson('airslate/addon-php-utils');
+        });
+}
+
+$v = [];
+foreach ($info as $key => $value) {
+    $v[$value][] = $key;
+}
+
+var_dump($v);*/

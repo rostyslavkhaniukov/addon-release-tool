@@ -4,13 +4,19 @@ declare(strict_types=1);
 namespace AirSlate\Releaser\Entities;
 
 /**
- * Class User
+ * Class Review
  * @package AirSlate\Releaser\Entities
  */
-class User
+class Review
 {
-    /** @var mixed */
-    public $login;
+    /** @var string */
+    public $state;
+
+    /** @var User */
+    public $user;
+
+    /** @var string */
+    public $submitted_at;
 
     /**
      * Release constructor.
@@ -18,14 +24,25 @@ class User
      */
     public function __construct(array $data)
     {
-        $this->login = $data['login'];
+
+        $this->state = $data['state'];
+        $this->user = User::fromArray($data['user']);
+        $this->submitted_at = $data['submitted_at'];
+    }
+
+    /**
+     * @return User
+     */
+    public function getUser(): User
+    {
+        return $this->user;
     }
 
     /**
      * @param array $data
-     * @return User
+     * @return Review
      */
-    public static function fromArray(array $data): User
+    public static function fromArray(array $data): Review
     {
         return new static($data);
     }
