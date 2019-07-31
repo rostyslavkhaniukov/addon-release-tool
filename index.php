@@ -3,13 +3,16 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+$dotenv = Dotenv\Dotenv::create(__DIR__);
+$dotenv->load();
+
 use AirSlate\Releaser\Builder;
 use AirSlate\Releaser\FileProcessor;
 use Fluffy\GithubClient\Client;
 
 $client = new Client([
-    'owner' => 'airslateinc',
-    'token' => '',
+    'owner' => getenv('OWNER'),
+    'token' => getenv('GITHUB_OAUTH_TOKEN'),
 ]);
 
 /*$addons = [
