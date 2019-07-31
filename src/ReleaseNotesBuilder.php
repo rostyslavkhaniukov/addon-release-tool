@@ -3,8 +3,12 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser;
 
-use AirSlate\Releaser\Entities\PullRequest;
+use Fluffy\GithubClient\Entities\PullRequest;
 
+/**
+ * Class ReleaseNotesBuilder
+ * @package AirSlate\Releaser
+ */
 class ReleaseNotesBuilder
 {
     /**
@@ -28,6 +32,10 @@ class ReleaseNotesBuilder
         return '';
     }
 
+    /**
+     * @param PullRequest $pullRequest
+     * @return array
+     */
     private function parseTitle(PullRequest $pullRequest)
     {
         preg_match_all('/\[(.*)\](.*)/', $pullRequest->getTitle(), $matches);

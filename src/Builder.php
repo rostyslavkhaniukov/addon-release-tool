@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser;
 
-use AirSlate\Releaser\Entities\Branch;
-use AirSlate\Releaser\Entities\Git;
-use AirSlate\Releaser\Entities\Ref;
-use AirSlate\Releaser\Enums\FileMode;
-use AirSlate\Releaser\Enums\LeafType;
-use AirSlate\Releaser\Models\StagedFile;
+use Fluffy\GithubClient\Client;
+use Fluffy\GithubClient\Entities\Branch;
+use Fluffy\GithubClient\Entities\Git;
+use Fluffy\GithubClient\Entities\Ref;
+use Fluffy\GithubClient\Enums\FileMode;
+use Fluffy\GithubClient\Enums\LeafType;
 use Closure;
+use Fluffy\GithubClient\Models\StagedFile;
 
 class Builder
 {

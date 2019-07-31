@@ -3,8 +3,13 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser;
 
-use AirSlate\Releaser\Models\StagedFile;
+use Fluffy\GithubClient\Client;
+use Fluffy\GithubClient\Models\StagedFile;
 
+/**
+ * Class FileProcessor
+ * @package AirSlate\Releaser
+ */
 class FileProcessor
 {
     /** @var Client */
@@ -33,7 +38,11 @@ class FileProcessor
         $this->owner = $owner;
         $this->repository = $repository;
     }
-    
+
+    /**
+     * @param string $file
+     * @return FileProcessor
+     */
     public function take(string $file): self
     {
         $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
@@ -43,6 +52,23 @@ class FileProcessor
         return $this;
     }
 
+    /**
+     * @param string $path
+     * @param string $content
+     * @return FileProcessor
+     */
+    public function create(string $path, string $content): self
+    {
+        $this->filePath = $path;
+        $this->fileBuffer = $content;
+
+        return $this;
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
     public function findInJson(string $path): string
     {
         $json = json_decode($this->fileBuffer, true);
@@ -54,13 +80,33 @@ class FileProcessor
         return (string)$package[0]['version'];
     }
 
-    public function replace(string $pattern, string $replacement)
+    /**
+     * @param string $pattern
+     * @param string $replacement
+     * @return $this
+     */
+    public function regexReplace(string $pattern, string $replacement)
     {
         $this->fileBuffer = preg_replace($pattern, $replacement, $this->fileBuffer);
 
         return $this;
     }
 
+    /**
+     * @param string $search
+     * @param string $replacement
+     * @return $this
+     */
+    public function replace(string $search, string $replacement)
+    {
+        $this->fileBuffer = str_replace($search, $replacement, $this->fileBuffer);
+
+        return $this;
+    }
+
+    /**
+     * @return StagedFile
+     */
     public function put(): StagedFile
     {
         $blob = $this->client->blobs()->put(
