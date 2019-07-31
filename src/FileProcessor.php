@@ -105,6 +105,15 @@ class FileProcessor
     }
 
     /**
+     * @param string $line
+     * @return $this
+     */
+    public function dropLine(string $line)
+    {
+        return $this->replace($line . "\n", '');
+    }
+
+    /**
      * @return StagedFile
      */
     public function put(): StagedFile
