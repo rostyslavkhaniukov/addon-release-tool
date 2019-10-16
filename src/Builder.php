@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser;
 
+use AirSlate\Releaser\Factories\ProcessorFactory;
+use AirSlate\Releaser\Processors\FileProcessor;
 use Fluffy\GithubClient\Client;
 use Fluffy\GithubClient\Entities\Branch;
 use Fluffy\GithubClient\Entities\Git;
@@ -44,11 +46,35 @@ class Builder
     /** @var string|null */
     private $task = null;
 
+    /**
+     * @param Closure $closure
+     * @return $this
+     * @throws \ReflectionException
+     * @throws \Exception
+     */
+    public function verify(Closure $closure)
+    {
+        $factory = new ProcessorFactory();
+        $processor = $factory->make($closure, $this->client, $this->owner, $this->repository);
+        $process = $closure($processor);
+
+        if (!$process) {
+            throw new \Exception("Skip");
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Closure $closure
+     * @return $this
+     * @throws \ReflectionException
+     */
     public function step(Closure $closure)
     {
-        $fileProcessor = new FileProcessor($this->client, $this->owner, $this->repository);
-
-        $process = $closure($fileProcessor);
+        $factory = new ProcessorFactory();
+        $processor = $factory->make($closure, $this->client, $this->owner, $this->repository);
+        $process = $closure($processor);
 
         $this->stagedFiles[] = $process->put();
 

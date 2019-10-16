@@ -1,16 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace AirSlate\Releaser;
+namespace AirSlate\Releaser\Processors;
 
 use Fluffy\GithubClient\Client;
 use Fluffy\GithubClient\Models\StagedFile;
 
 /**
- * Class FileProcessor
- * @package AirSlate\Releaser
+ * @package AirSlate\Releaser\Processors
  */
-class FileProcessor
+class FileProcessor implements ProcessorInterface
 {
     /** @var Client */
     private $client;
@@ -22,7 +21,7 @@ class FileProcessor
     private $owner;
 
     /** @var string */
-    private $fileBuffer;
+    protected $fileBuffer;
 
     /** @var string */
     private $filePath;
@@ -41,9 +40,9 @@ class FileProcessor
 
     /**
      * @param string $file
-     * @return FileProcessor
+     * @return static
      */
-    public function take(string $file): self
+    public function take(string $file)
     {
         $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
         $this->filePath = $file;
@@ -55,9 +54,9 @@ class FileProcessor
     /**
      * @param string $path
      * @param string $content
-     * @return FileProcessor
+     * @return static
      */
-    public function create(string $path, string $content): self
+    public function create(string $path, string $content)
     {
         $this->filePath = $path;
         $this->fileBuffer = $content;
@@ -83,7 +82,7 @@ class FileProcessor
     /**
      * @param string $pattern
      * @param string $replacement
-     * @return $this
+     * @return static
      */
     public function regexReplace(string $pattern, string $replacement)
     {
@@ -95,7 +94,7 @@ class FileProcessor
     /**
      * @param string $search
      * @param string $replacement
-     * @return $this
+     * @return static
      */
     public function replace(string $search, string $replacement)
     {
@@ -106,7 +105,7 @@ class FileProcessor
 
     /**
      * @param string $line
-     * @return $this
+     * @return static
      */
     public function dropLine(string $line)
     {
