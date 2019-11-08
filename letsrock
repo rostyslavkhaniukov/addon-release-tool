@@ -7,6 +7,10 @@ if (file_exists(__DIR__.'/../../autoload.php')) {
     require __DIR__.'/vendor/autoload.php';
 }
 
+$dotenv = Dotenv\Dotenv::create(__DIR__);
+$dotenv->load();
+
 $app = new Symfony\Component\Console\Application('Lets rock and develop addons', '0.0.1');
 $app->add(new AirSlate\Releaser\Commands\PatchCircleCIEnvCommand);
+$app->add(new AirSlate\Releaser\Commands\AddonFetchCommand);
 $app->run();

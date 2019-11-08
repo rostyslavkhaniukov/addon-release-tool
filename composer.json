@@ -15,7 +15,9 @@
         "rostyslavkhaniukov/fluffy-github-client": "dev-master",
         "vlucas/phpdotenv": "^3.4",
         "sensiolabs/consul-php-sdk": "^3.1",
-        "symfony/console": "^4.3"
+        "symfony/console": "^4.3",
+        "nette/neon": "^3.0",
+        "composer/composer": "^1.9"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.3",
