@@ -26,6 +26,12 @@ class FileProcessor implements ProcessorInterface
     /** @var string */
     private $filePath;
 
+    /** @var string */
+    private $withFilePath;
+
+    /** @var string */
+    protected $withFileBuffer;
+
     /**
      * @param Client $client
      * @param string $owner
@@ -47,6 +53,19 @@ class FileProcessor implements ProcessorInterface
         $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
         $this->filePath = $file;
         $this->fileBuffer = $content->getDecoded();
+
+        return $this;
+    }
+
+    /**
+     * @param string $file
+     * @return $this
+     */
+    public function with(string $file)
+    {
+        $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
+        $this->withFilePath = $file;
+        $this->withFileBuffer = $content->getDecoded();
 
         return $this;
     }
