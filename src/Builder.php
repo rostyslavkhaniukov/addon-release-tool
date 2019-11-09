@@ -41,7 +41,7 @@ class Builder
     private $newCommit;
 
     /** @var StagedFile[] */
-    private $stagedFiles;
+    private $stagedFiles = [];
 
     /** @var string|null */
     private $task = null;
@@ -76,7 +76,7 @@ class Builder
         $processor = $factory->make($closure, $this->client, $this->owner, $this->repository);
         $process = $closure($processor);
 
-        $this->stagedFiles[] = $process->put();
+        $this->stagedFiles = array_merge($this->stagedFiles, $process->put());
 
         return $this;
     }

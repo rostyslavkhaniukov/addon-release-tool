@@ -5,12 +5,7 @@ namespace AirSlate\Releaser\Processors;
 
 class JsonProcessor extends FileProcessor
 {
-    /**
-     * @param string $path
-     * @param string $content
-     * @return bool
-     */
-    public function isset(string $key): bool
+/*    public function isset(string $key): bool
     {
         $value = json_decode($this->fileBuffer, true);
         $parts = explode('.', $key);
@@ -25,11 +20,6 @@ class JsonProcessor extends FileProcessor
         return true;
     }
 
-    /**
-     * @param string $key
-     * @return JsonProcessor
-     * @throws \Exception
-     */
     public function unsetKey(string $key): JsonProcessor
     {
         $value = json_decode($this->fileBuffer, true);
@@ -58,5 +48,5 @@ class JsonProcessor extends FileProcessor
     public function notIsset(string $key): bool
     {
         return !$this->isset($key);
-    }
+    }*/
 }

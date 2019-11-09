@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser\Processors;
 
+use AirSlate\Releaser\DTO\WorkingFile;
 use Fluffy\GithubClient\Client;
 use Fluffy\GithubClient\Models\StagedFile;
 
@@ -20,11 +21,8 @@ class FileProcessor implements ProcessorInterface
     /** @var string */
     private $owner;
 
-    /** @var string */
-    protected $fileBuffer;
-
-    /** @var string */
-    private $filePath;
+    /** @var WorkingFile[] */
+    protected $workingFiles = [];
 
     /** @var string */
     private $withFilePath;
@@ -51,8 +49,8 @@ class FileProcessor implements ProcessorInterface
     public function take(string $file)
     {
         $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
-        $this->filePath = $file;
-        $this->fileBuffer = $content->getDecoded();
+
+        $this->workingFiles[$file] = new WorkingFile($file, $content->getDecoded());
 
         return $this;
     }
@@ -77,25 +75,9 @@ class FileProcessor implements ProcessorInterface
      */
     public function create(string $path, string $content)
     {
-        $this->filePath = $path;
-        $this->fileBuffer = $content;
+        $this->workingFiles[$path] = new WorkingFile($path, $content);
 
         return $this;
-    }
-
-    /**
-     * @param string $path
-     * @return string
-     */
-    public function findInJson(string $path): string
-    {
-        $json = json_decode($this->fileBuffer, true);
-        $value = $json['packages'];
-        $package = array_filter($value, function ($package) use ($path) {
-            return $package['name'] === $path;
-        });
-
-        return (string)$package[0]['version'];
     }
 
     /**
@@ -105,7 +87,9 @@ class FileProcessor implements ProcessorInterface
      */
     public function regexReplace(string $pattern, string $replacement)
     {
-        $this->fileBuffer = preg_replace($pattern, $replacement, $this->fileBuffer);
+        array_walk($this->workingFiles, function (WorkingFile $file) use ($pattern, $replacement) {
+            $file->setContent(preg_replace($pattern, $replacement, $file->getContent()));
+        });
 
         return $this;
     }
@@ -117,7 +101,9 @@ class FileProcessor implements ProcessorInterface
      */
     public function replace(string $search, string $replacement)
     {
-        $this->fileBuffer = str_replace($search, $replacement, $this->fileBuffer);
+        array_walk($this->workingFiles, function (WorkingFile $file) use ($search, $replacement) {
+            $file->setContent(str_replace($search, $replacement, $file->getContent()));
+        });
 
         return $this;
     }
@@ -132,17 +118,19 @@ class FileProcessor implements ProcessorInterface
     }
 
     /**
-     * @return StagedFile
+     * @return StagedFile[]
      */
-    public function put(): StagedFile
+    public function put(): array
     {
-        $blob = $this->client->blobs()->put(
-            $this->owner,
-            $this->repository,
-            base64_encode($this->fileBuffer),
-            'base64'
-        );
+        return array_map(function (WorkingFile $file) {
+            $blob = $this->client->blobs()->put(
+                $this->owner,
+                $this->repository,
+                base64_encode($file->getContent()),
+                'base64'
+            );
 
-        return new StagedFile($this->filePath, $blob);
+            return new StagedFile($file->getPath(), $blob);
+        }, array_values($this->workingFiles));
     }
 }
