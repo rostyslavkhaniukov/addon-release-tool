@@ -7,7 +7,9 @@ namespace AirSlate\Releaser\Factories;
 use AirSlate\Releaser\Processors\ProcessorInterface;
 use Closure;
 use Fluffy\GithubClient\Client;
+use ReflectionException;
 use ReflectionFunction;
+use ReflectionParameter;
 
 /**
  * @package AirSlate\Releaser\Factories
@@ -20,14 +22,14 @@ class ProcessorFactory
      * @param string $owner
      * @param string $repository
      * @return ProcessorInterface
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function make(Closure $closure, Client $client, string $owner, string $repository): ProcessorInterface
     {
         $reflection = new ReflectionFunction($closure);
         $arguments  = $reflection->getParameters();
 
-        /** @var \ReflectionParameter $processorParameter */
+        /** @var ReflectionParameter $processorParameter */
         $processorParameter = reset($arguments);
         $processorClass = $processorParameter->getClass();
 
