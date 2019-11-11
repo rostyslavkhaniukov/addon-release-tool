@@ -1,13 +1,25 @@
 <?php
+
 declare(strict_types=1);
 
 namespace AirSlate\Releaser\Processors;
 
+use Exception;
+
 class JsonProcessor extends FileProcessor
 {
+    /**
+     * @param string $key
+     * @return bool
+     * @throws Exception
+     */
     public function isset(string $key): bool
     {
         $file = end($this->workingFiles);
+        if (!$file) {
+            throw new Exception('Current file not found');
+        }
+
         $value = json_decode($file->getContent(), true);
         $parts = explode('.', $key);
         foreach ($parts as $part) {
@@ -38,7 +50,7 @@ class JsonProcessor extends FileProcessor
 
         unset($value[array_shift($parts)]);
 
-        $result = json_encode($original, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+        $result = json_encode($original, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         $result = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $result);
         $result .= "\n";
 

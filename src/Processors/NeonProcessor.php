@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace AirSlate\Releaser\Processors;
@@ -15,7 +16,8 @@ class NeonProcessor extends JsonProcessor
             'tags' => ['phpstan.rules.rule'],
         ];
 
-        var_dump(Neon::encode($config, 1));die;
+        var_dump(Neon::encode($config, 1));
+        die;
 
         return true;
     }

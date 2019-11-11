@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace AirSlate\Releaser\Processors;
@@ -27,7 +28,7 @@ class ComposerProcessor extends JsonProcessor
             $this->composerJsonContent[$packagesKey][$dependency] = '*';
         }
 
-        $newContent = json_encode($this->composerJsonContent, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) . "\n";
+        $newContent = json_encode($this->composerJsonContent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
         $this->workingFiles['composer.json']->setContent($newContent);
 
         $this->update();

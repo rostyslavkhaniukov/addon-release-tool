@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace AirSlate\Releaser;
@@ -25,7 +26,8 @@ class ReleaseNotesBuilder
 
         foreach ($parsed as $key => $value) {
             foreach ($value as $bla) {
-                var_dump($bla);die;
+                var_dump($bla);
+                die;
             }
         }
 
