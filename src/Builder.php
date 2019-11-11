@@ -13,6 +13,7 @@ use Fluffy\GithubClient\Enums\FileMode;
 use Fluffy\GithubClient\Enums\LeafType;
 use Closure;
 use Fluffy\GithubClient\Models\StagedFile;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Builder
 {
@@ -48,18 +49,20 @@ class Builder
 
     /**
      * @param Closure $closure
-     * @return $this
+     * @param OutputInterface $output
+     * @param string $label
+     * @return $this|EmptyBuilder
      * @throws \ReflectionException
-     * @throws \Exception
      */
-    public function verify(Closure $closure)
+    public function verify(Closure $closure, OutputInterface $output, string $label)
     {
         $factory = new ProcessorFactory();
         $processor = $factory->make($closure, $this->client, $this->owner, $this->repository);
         $process = $closure($processor);
 
         if (!$process) {
-            throw new \Exception("Skip");
+            $output->writeln("<comment>${label} execution skipped.</comment>");
+            return new EmptyBuilder();
         }
 
         return $this;

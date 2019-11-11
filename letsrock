@@ -14,4 +14,5 @@ $app = new Symfony\Component\Console\Application('Lets rock and develop addons',
 $app->add(new AirSlate\Releaser\Commands\PatchCircleCIEnvCommand());
 $app->add(new AirSlate\Releaser\Commands\AddonFetchCommand());
 $app->add(new AirSlate\Releaser\Commands\PullRequests\AddCircleCI\AddCircleCICommand());
+$app->add(new AirSlate\Releaser\Commands\PullRequests\DropAutoInstall\DropAutoInstallCommand());
 $app->run();
