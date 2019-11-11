@@ -33,9 +33,19 @@ class JsonProcessor extends FileProcessor
         return true;
     }
 
+    /**
+     * @param string $key
+     * @return JsonProcessor
+     * @throws Exception
+     */
     public function unsetKey(string $key): JsonProcessor
     {
-        $value = json_decode($this->fileBuffer, true);
+        $file = end($this->workingFiles);
+        if (!$file) {
+            throw new Exception('Current file not found');
+        }
+
+        $value = json_decode($file->getContent(), true);
         $original = &$value;
         $parts = explode('.', $key);
         while (count($parts) > 1) {

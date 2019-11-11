@@ -43,7 +43,7 @@ class DropAutoInstallCommand extends Command
                 ->verify(function (JsonProcessor $addonScheme) {
                     return $addonScheme
                         ->take('docker/config/addon/create/addon.json')
-                        ->isset('data.attributes.auto_in2stall');
+                        ->isset('data.attributes.auto_install');
                 }, $output, $addon)
                 ->forTask('AAD-532')
                 ->from('develop')
