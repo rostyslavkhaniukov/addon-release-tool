@@ -11,6 +11,7 @@ $dotenv = Dotenv\Dotenv::create(__DIR__);
 $dotenv->load();
 
 $app = new Symfony\Component\Console\Application('Lets rock and develop addons', '0.0.1');
-$app->add(new AirSlate\Releaser\Commands\PatchCircleCIEnvCommand);
-$app->add(new AirSlate\Releaser\Commands\AddonFetchCommand);
+$app->add(new AirSlate\Releaser\Commands\PatchCircleCIEnvCommand());
+$app->add(new AirSlate\Releaser\Commands\AddonFetchCommand());
+$app->add(new AirSlate\Releaser\Commands\PullRequests\AddCircleCI\AddCircleCICommand());
 $app->run();

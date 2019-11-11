@@ -50,11 +50,9 @@ class ComposerProcessor extends JsonProcessor
         putenv("COMPOSER={$tempComposerJson}");
         putenv("COMPOSER_VENDOR_DIR=${sysDir}/test-vendor");
 
-
-        $a = [];
-        $a['github-oauth']['github.com'] = '38706f70ba9b6ae6ef3c917118145000f8c00bff';
-
-        putenv("COMPOSER_AUTH=" . json_encode($a));
+        $auth = [];
+        $auth['github-oauth']['github.com'] = getenv('GITHUB_OAUTH_TOKEN');
+        putenv("COMPOSER_AUTH=" . json_encode($auth));
         $input = new ArrayInput(['command' => 'update', '--ignore-platform-reqs' => null]);
 
         $app = new Application();

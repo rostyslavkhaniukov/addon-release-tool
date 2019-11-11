@@ -1,0 +1,107 @@
+# PHP CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-php/ for more details
+#
+version: 2
+workflows:
+  version: 2
+  test-n-build:
+    jobs:
+      - test:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /^ignore\/.*/
+      - build:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /^ignore\/.*/
+jobs:
+  test:
+    docker:
+      - image: circleci/php:7.2-cli
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - vendor-dev-{{ checksum "composer.lock" }}
+      - run:
+          name: Composer Install
+          command: |
+            composer config --global github-oauth.github.com ${GITHUB_ACCESS_TOKEN} &&
+            composer install -n --prefer-dist --ignore-platform-reqs
+      - save_cache:
+          paths:
+            - ./vendor
+          key: vendor-dev-{{ checksum "composer.lock" }}
+
+      # Prepare
+      - run:
+          name: Prepare .env
+          command: test -f .env || cp .env.example .env
+
+      # run tests!
+      - run:
+          name: PHPCS
+          command: ./vendor/bin/phpcs
+      - run:
+          name: PHPStan
+          command: ./vendor/bin/phpstan analyse ./app --level=1
+      - run:
+          name: PHPUnit
+          command: ./vendor/bin/phpunit --no-coverage
+      - run:
+          name: PHPMDApp
+          command: ./vendor/bin/phpmd ./app text codesize
+      - run:
+          name: PHPMDTests
+          command: ./vendor/bin/phpmd ./tests text codesize
+  build:
+    docker:
+      - image: circleci/php:7.2-cli
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - vendor-no-dev-{{ checksum "composer.lock" }}
+      - run:
+          name: Composer Install NoDev
+          command: |
+            composer config --global github-oauth.github.com ${GITHUB_ACCESS_TOKEN} &&
+            composer install -n --prefer-dist --no-dev --ignore-platform-reqs
+      - save_cache:
+          paths:
+            - ./vendor
+          key: vendor-no-dev-{{ checksum "composer.lock" }}
+      - run:
+          name: Docker Image Tag
+          command: |
+            if [[ -n ${CIRCLE_TAG} ]]
+            then
+              echo "export IMAGE_TAG=${CIRCLE_TAG//\//_}" >> $BASH_ENV
+            elif [[ -n ${CIRCLE_BRANCH} ]]
+            then
+              echo "export IMAGE_TAG=${CIRCLE_BRANCH//\//_}" >> $BASH_ENV
+            fi
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Docker Login
+          command: echo ${DOCKER_PASS} | docker login --username ${DOCKER_USER} --password-stdin
+      - run:
+          name: Docker Build
+          command: |
+            docker build \
+              --build-arg BUILD_ID=${CIRCLE_SHA1} \
+              --build-arg VERSION=${IMAGE_TAG} \
+              -t airslate/${CIRCLE_PROJECT_REPONAME}:${IMAGE_TAG} .
+      - run:
+          name: Docker Push
+          command: docker push airslate/${CIRCLE_PROJECT_REPONAME}:${IMAGE_TAG}

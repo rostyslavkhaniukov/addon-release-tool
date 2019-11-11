@@ -80,6 +80,15 @@ class FileProcessor implements ProcessorInterface
         return $this;
     }
 
+    public function createFromFile(string $path, string $localPath): self
+    {
+        $content = file_get_contents($localPath);
+
+        $this->workingFiles[$path] = new WorkingFile($path, $content);
+
+        return $this;
+    }
+
     /**
      * @param string $pattern
      * @param string $replacement
