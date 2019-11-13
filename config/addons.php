@@ -46,6 +46,21 @@ return [
             'name' => 'waiting for platform review',
             'color' => '1d76db',
             'description' => 'Approved by applications team and waiting for platform team',
-        ]
+        ],
+        [
+            'name' => 'conflicts',
+            'color' => 'b60205',
+            'description' => 'Pull request has conflicts with base branch',
+        ],
+        [
+            'name' => 'need 1 approve',
+            'color' => '750bb7',
+            'description' => 'This PR need one more approve',
+        ],
+        [
+            'name' => 'need 2 approves',
+            'color' => '750bb7',
+            'description' => 'This PR need two approves',
+        ],
     ],
 ];
