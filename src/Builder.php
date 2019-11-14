@@ -25,9 +25,6 @@ class Builder
     private $repository;
 
     /** @var string */
-    private $owner;
-
-    /** @var string */
     private $baseBranch;
 
     /** @var Ref */
@@ -48,21 +45,24 @@ class Builder
     /** @var string|null */
     private $task = null;
 
+    /** @var OutputInterface|null */
+    private $output = null;
+
     /**
      * @param Closure $closure
-     * @param OutputInterface $output
-     * @param string $label
      * @return $this|EmptyBuilder
      * @throws \ReflectionException
      */
-    public function verify(Closure $closure, OutputInterface $output, string $label)
+    public function verify(Closure $closure)
     {
         $factory = new ProcessorFactory();
-        $processor = $factory->make($closure, $this->client, $this->owner, $this->repository);
+        $processor = $factory->make($closure, $this->client, $this->client->getOwner(), $this->repository);
         $process = $closure($processor);
 
         if (!$process) {
-            $output->writeln("<comment>${label} execution skipped.</comment>");
+            if ($this->output !== null) {
+                $this->output->writeln("<comment>{$this->repository} execution skipped.</comment>");
+            }
             return new EmptyBuilder();
         }
 
@@ -77,7 +77,7 @@ class Builder
     public function step(Closure $closure)
     {
         $factory = new ProcessorFactory();
-        $processor = $factory->make($closure, $this->client, $this->owner, $this->repository);
+        $processor = $factory->make($closure, $this->client, $this->client->getOwner(), $this->repository);
         $process = $closure($processor);
 
         $this->stagedFiles = array_merge($this->stagedFiles, $process->put());
@@ -87,17 +87,16 @@ class Builder
 
     public function collect(Closure $closure)
     {
-        $fileProcessor = new FileProcessor($this->client, $this->owner, $this->repository);
+        $fileProcessor = new FileProcessor($this->client, $this->client->getOwner(), $this->repository);
 
         $process = $closure($fileProcessor);
 
         return $process;
     }
 
-    public function __construct(Client $client, string $owner, string $repository)
+    public function __construct(Client $client, string $repository)
     {
         $this->client = $client;
-        $this->owner = $owner;
         $this->repository = $repository;
     }
 
@@ -122,10 +121,14 @@ class Builder
             $this->branchName = "{$this->task}-{$this->branchName}";
         }
 
-        $this->baseBranchEntity = $this->client->branches()->get($this->owner, $this->repository, $this->baseBranch);
+        $this->baseBranchEntity = $this->client->branches()->get(
+            $this->client->getOwner(),
+            $this->repository,
+            $this->baseBranch
+        );
 
         $this->branchRef = $this->client->refs()->createRef(
-            $this->owner,
+            $this->client->getOwner(),
             $this->repository,
             "refs/heads/{$this->branchName}",
             $this->baseBranchEntity->commit->sha
@@ -142,7 +145,7 @@ class Builder
 
         $commit = $this->client->commits()->get($this->repository, $this->branchRef->objectSha);
         $tree = $this->client->trees()->createTree(
-            $this->owner,
+            $this->client->getOwner(),
             $this->repository,
             [
                 'base_tree' => $commit->commit->tree->getSha(),
@@ -158,7 +161,7 @@ class Builder
         );
 
         $this->newCommit = $this->client->commits()->commit(
-            $this->owner,
+            $this->client->getOwner(),
             $this->repository,
             $tree->getSha(),
             [
@@ -173,7 +176,7 @@ class Builder
     public function push()
     {
         $this->client->refs()->updateRef(
-            $this->owner,
+            $this->client->getOwner(),
             $this->repository,
             "heads/{$this->branchName}",
             $this->newCommit->getSha()
@@ -189,12 +192,23 @@ class Builder
         }
 
         $this->client->pullRequests()->create(
-            $this->owner,
+            $this->client->getOwner(),
             $this->repository,
             $name,
             $body,
             $this->branchName,
             $this->baseBranch
         );
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @return self
+     */
+    public function setOutput(OutputInterface $output): self
+    {
+        $this->output = $output;
+
+        return $this;
     }
 }
