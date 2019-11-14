@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace AirSlate\Releaser\Processors;
 
 use AirSlate\Releaser\DTO\WorkingFile;
+use AirSlate\Releaser\Exceptions\FileNotFoundInRepositoryException;
 use Fluffy\GithubClient\Client;
+use Fluffy\GithubClient\Exceptions\DomainException;
 use Fluffy\GithubClient\Models\StagedFile;
 
 /**
@@ -49,7 +51,13 @@ class FileProcessor implements ProcessorInterface
      */
     public function take(string $file)
     {
-        $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
+        try {
+            $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
+        } catch (DomainException $e) {
+            if ($e->getPrevious()->getCode() === 404) {
+                throw new FileNotFoundInRepositoryException($file);
+            }
+        }
 
         $this->workingFiles[$file] = new WorkingFile($file, $content->getDecoded());
 
@@ -86,6 +94,16 @@ class FileProcessor implements ProcessorInterface
         $content = file_get_contents($localPath);
 
         $this->workingFiles[$path] = new WorkingFile($path, $content);
+
+        return $this;
+    }
+
+    public function setFromFile(string $localPath): self
+    {
+        $content = file_get_contents($localPath);
+        $keys = array_keys($this->workingFiles);
+        $key = reset($keys);
+        $this->workingFiles[$key]->setContent($content);
 
         return $this;
     }

@@ -2,6 +2,9 @@
 declare(strict_types=1);
 
 use AirSlate\Releaser\Builder;
+use AirSlate\Releaser\Processors\FileProcessor;
+use AirSlate\Releaser\Processors\YamlProcessor;
+use Fluffy\GithubClient\Client as GithubClient;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -9,48 +12,25 @@ $dotenv = Dotenv\Dotenv::create(__DIR__);
 $dotenv->load();
 
 $addons = [
-    'notification-addon',
-    'prefill-from-source-addons',
-    'audit-trail-addon',
-    'change-order-addon',
-    'document-prefill-addon',
-    'dropdown-options-prefill-addon',
-    'google-calendar-addon',
-    'google-spreadsheets-duplex-addon',
-    'google-spreadsheets-postfinish-addon',
-    'google-spreadsheets-watcher-addon',
-    'jira-addon',
-    'lock-slate-bot',
-    'export-to-source-addons',
     'packet-delete-addon',
-    'recipient-to-role-addon',
-    'revoke-access-addon',
-    'roles-users-management-addon',
-    'send-slate-addon',
-    'set-packet-name-addon',
-    'slack-notifier-addon',
-    'slate-prefill-addon',
-    'smartsheet-export-addon',
-    'sms-notifier-addon',
-    'tags-addon',
-    'webhook-addon',
-    'weekly-reminder-addon',
-    'create-slate-addon',
-    'create-slate-another-flow-addon'
 ];
 
-/*foreach ($addons as $addon) {
+$client = new GithubClient([
+    'owner' => getenv('OWNER'),
+    'token' => getenv('GITHUB_OAUTH_TOKEN'),
+]);
+
+foreach ($addons as $addon) {
     try {
-        (new Builder($client, 'airslateinc', $addon))
-            ->verify(function (ComposerProcessor $dependencies) {
-                return $dependencies
-                    ->take('composer.lock')
-                    ->checkLocked('pdffiller/mail-api-client');
+        (new Builder($client, $addon))
+
+            ->step(function (FileProcessor $file) {
+                var_dump(2);die;
             });
 
         echo $addon . "\n";
     } catch (\Throwable $e) {
         var_dump($e->getMessage());
     }
-}*/
+}
 

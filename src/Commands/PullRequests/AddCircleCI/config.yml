@@ -52,7 +52,7 @@ jobs:
           command: ./vendor/bin/phpcs
       - run:
           name: PHPStan
-          command: ./vendor/bin/phpstan analyse ./app --level=1
+          command: ./vendor/bin/phpstan analyse ./app --level=7
       - run:
           name: PHPUnit
           command: ./vendor/bin/phpunit --no-coverage
