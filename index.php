@@ -20,17 +20,7 @@ $client = new GithubClient([
     'token' => getenv('GITHUB_OAUTH_TOKEN'),
 ]);
 
-foreach ($addons as $addon) {
-    try {
-        (new Builder($client, $addon))
+$a = $client->contents()->readFile('airslateinc', 'prefill-from-source-addons', 'docker/config');
 
-            ->step(function (FileProcessor $file) {
-                var_dump(2);die;
-            });
-
-        echo $addon . "\n";
-    } catch (\Throwable $e) {
-        var_dump($e->getMessage());
-    }
-}
+var_dump($a);
 

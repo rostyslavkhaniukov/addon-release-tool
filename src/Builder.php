@@ -74,6 +74,8 @@ class Builder
         if ($this->output !== null) {
             $this->output->writeln("<info>{$this->repository}: {$message}.</info>");
         }
+
+        return $this;
     }
 
     /**

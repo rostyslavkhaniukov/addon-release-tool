@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "276c81f28fbbfc193de5e1895cc2e9b0",
+    "content-hash": "6367310a526beda2bad7da803f375a51",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1893,12 +1893,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rostyslavkhaniukov/fluffy-github-client.git",
-                "reference": "2b16e7b88d4289ee8d5f5fd64484692981008b72"
+                "reference": "74db199245d69ccfeec89e9bdd5f812f06dcbb34"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rostyslavkhaniukov/fluffy-github-client/zipball/2b16e7b88d4289ee8d5f5fd64484692981008b72",
-                "reference": "2b16e7b88d4289ee8d5f5fd64484692981008b72",
+                "url": "https://api.github.com/repos/rostyslavkhaniukov/fluffy-github-client/zipball/74db199245d69ccfeec89e9bdd5f812f06dcbb34",
+                "reference": "74db199245d69ccfeec89e9bdd5f812f06dcbb34",
                 "shasum": ""
             },
             "require": {
@@ -1923,7 +1923,7 @@
                 "source": "https://github.com/rostyslavkhaniukov/fluffy-github-client/tree/master",
                 "issues": "https://github.com/rostyslavkhaniukov/fluffy-github-client/issues"
             },
-            "time": "2019-11-14T08:11:45+00:00"
+            "time": "2019-11-14T13:59:07+00:00"
         },
         {
             "name": "seld/jsonlint",
@@ -4251,7 +4251,8 @@
     "platform": {
         "php": ">=7.1",
         "ext-json": "*",
-        "ext-yaml": "*"
+        "ext-yaml": "*",
+        "ext-simplexml": "*"
     },
     "platform-dev": []
 }

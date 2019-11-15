@@ -40,11 +40,9 @@ class JsonProcessor extends FileProcessor
      */
     public function unsetKey(string $key): JsonProcessor
     {
-        $file = end($this->workingFiles);
-        if (!$file) {
-            throw new Exception('Current file not found');
-        }
-
+        $keys = array_keys($this->workingFiles);
+        $fileKey = reset($keys);
+        $file = $this->workingFiles[$fileKey];
         $value = json_decode($file->getContent(), true);
         $original = &$value;
         $parts = explode('.', $key);
@@ -64,10 +62,15 @@ class JsonProcessor extends FileProcessor
         $result = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $result);
         $result .= "\n";
 
-        $this->fileBuffer = $result;
+        $this->workingFiles[$fileKey]->setContent($result);
         return $this;
     }
 
+    /**
+     * @param string $key
+     * @return bool
+     * @throws Exception
+     */
     public function notIsset(string $key): bool
     {
         return !$this->isset($key);
