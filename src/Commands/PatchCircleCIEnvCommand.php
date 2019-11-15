@@ -31,11 +31,24 @@ class PatchCircleCIEnvCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $output->writeln('<info>Now we try to set env variables for CircleCI project.</info>');
+        $this->config = require_once './config/addons.php';
+        $addons = $this->config['addons'] ?? [];
         $patcher = new CircleCIEnvPatcher();
-        $patcher->process($input->getArgument('project'), [
-            'DOCKER_USER' => getenv('DOCKER_USER'),
-            'DOCKER_PASS' => getenv('DOCKER_PASS'),
-            'GITHUB_ACCESS_TOKEN' => getenv('GITHUB_ACCESS_TOKEN'),
-        ]);
+
+        if ($input->getArgument('project') !== 'addons') {
+            $patcher->process($input->getArgument('project'), [
+                'DOCKER_USER' => getenv('DOCKER_USER'),
+                'DOCKER_PASS' => getenv('DOCKER_PASS'),
+                'GITHUB_ACCESS_TOKEN' => getenv('GITHUB_ACCESS_TOKEN'),
+            ]);
+        } else {
+            foreach ($addons as $addon) {
+                $patcher->process($addon, [
+                    'DOCKER_USER' => getenv('DOCKER_USER'),
+                    'DOCKER_PASS' => getenv('DOCKER_PASS'),
+                    'GITHUB_ACCESS_TOKEN' => getenv('GITHUB_ACCESS_TOKEN'),
+                ]);
+            }
+        }
     }
 }
