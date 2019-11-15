@@ -55,18 +55,27 @@ class Builder
      * @return $this|EmptyBuilder
      * @throws \ReflectionException
      */
-    public function verify(Closure $closure, OutputInterface $output, string $label)
+    public function verify(Closure $closure, ?callable $failCallback = null)
     {
         $factory = new ProcessorFactory();
         $processor = $factory->make($closure, $this->client, $this->owner, $this->repository);
         $process = $closure($processor);
 
         if (!$process) {
-            $output->writeln("<comment>${label} execution skipped.</comment>");
+            if ($failCallback !== null) {
+                $failCallback();
+            }
             return new EmptyBuilder();
         }
 
         return $this;
+    }
+
+    public function notify(string $message)
+    {
+        if ($this->output !== null) {
+            $this->output->writeln("<info>{$this->repository}: {$message}.</info>");
+        }
     }
 
     /**

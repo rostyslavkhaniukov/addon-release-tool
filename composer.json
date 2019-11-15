@@ -10,6 +10,8 @@
     "require": {
         "php": ">=7.1",
         "ext-json": "*",
+        "ext-yaml": "*",
+        "ext-simplexml": "*",
         "guzzlehttp/guzzle": "6.2.*|6.3.*",
         "illuminate/support": "^5.8",
         "rostyslavkhaniukov/fluffy-github-client": "dev-master",
