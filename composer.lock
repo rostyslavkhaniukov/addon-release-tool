@@ -1893,12 +1893,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rostyslavkhaniukov/fluffy-github-client.git",
-                "reference": "74db199245d69ccfeec89e9bdd5f812f06dcbb34"
+                "reference": "89acaca078f9ad629fedee687e3d5058325e00e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rostyslavkhaniukov/fluffy-github-client/zipball/74db199245d69ccfeec89e9bdd5f812f06dcbb34",
-                "reference": "74db199245d69ccfeec89e9bdd5f812f06dcbb34",
+                "url": "https://api.github.com/repos/rostyslavkhaniukov/fluffy-github-client/zipball/89acaca078f9ad629fedee687e3d5058325e00e4",
+                "reference": "89acaca078f9ad629fedee687e3d5058325e00e4",
                 "shasum": ""
             },
             "require": {
@@ -1923,7 +1923,7 @@
                 "source": "https://github.com/rostyslavkhaniukov/fluffy-github-client/tree/master",
                 "issues": "https://github.com/rostyslavkhaniukov/fluffy-github-client/issues"
             },
-            "time": "2019-11-14T13:59:07+00:00"
+            "time": "2019-11-15T16:34:51+00:00"
         },
         {
             "name": "seld/jsonlint",

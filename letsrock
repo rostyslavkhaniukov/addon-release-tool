@@ -17,4 +17,6 @@ $app->add(new AirSlate\Releaser\Commands\PullRequests\AddCircleCI\AddCircleCICom
 $app->add(new AirSlate\Releaser\Commands\PullRequests\DropAutoInstall\DropAutoInstallCommand());
 $app->add(new AirSlate\Releaser\Commands\PatchLabelsCommand());
 $app->add(new AirSlate\Releaser\Commands\PullRequests\EnablePHPCS\EnablePHPCS());
+$app->add(new AirSlate\Releaser\Commands\PullRequests\EnablePHPMD\EnablePHPMD());
+$app->add(new AirSlate\Releaser\Commands\UpdateBaseDockerImageCommand());
 $app->run();

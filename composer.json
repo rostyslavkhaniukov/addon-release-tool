@@ -7,6 +7,11 @@
             "AirSlate\\Releaser\\": "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "AirSlate\\Releaser\\Tests\\": "tests/"
+        }
+    },
     "require": {
         "php": ">=7.1",
         "ext-json": "*",
