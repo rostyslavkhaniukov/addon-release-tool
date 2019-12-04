@@ -27,6 +27,9 @@ class FileProcessor implements ProcessorInterface
     /** @var WorkingFile[] */
     protected $workingFiles = [];
 
+    /** @var WorkingFile[] */
+    protected $snapshots = [];
+
     /** @var string */
     private $withFilePath;
 
@@ -52,7 +55,7 @@ class FileProcessor implements ProcessorInterface
     public function take(string $file)
     {
         try {
-            $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
+            $content = $this->client->contents()->read($this->owner, $this->repository, $file);
         } catch (DomainException $e) {
             if ($e->getPrevious()->getCode() === 404) {
                 throw new FileNotFoundInRepositoryException($file);
@@ -60,6 +63,7 @@ class FileProcessor implements ProcessorInterface
         }
 
         $this->workingFiles[$file] = new WorkingFile($file, $content->getDecoded());
+        $this->snapshots[$file] = clone $this->workingFiles[$file];
 
         return $this;
     }
@@ -151,6 +155,11 @@ class FileProcessor implements ProcessorInterface
     public function put(): array
     {
         return array_map(function (WorkingFile $file) {
+            $snapshot = $this->snapshots[$file->getPath()];
+            if ($file->getContent() === $snapshot->getContent()) {
+                return null;
+            }
+
             $blob = $this->client->blobs()->put(
                 $this->owner,
                 $this->repository,

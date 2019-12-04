@@ -44,9 +44,10 @@ class PatchCircleCIEnvCommand extends Command
         } else {
             foreach ($addons as $addon) {
                 $patcher->process($addon, [
-                    'DOCKER_USER' => getenv('DOCKER_USER'),
-                    'DOCKER_PASS' => getenv('DOCKER_PASS'),
+                    //'DOCKER_USER' => getenv('DOCKER_USER'),
+                    //'DOCKER_PASS' => getenv('DOCKER_PASS'),
                     'GITHUB_ACCESS_TOKEN' => getenv('GITHUB_ACCESS_TOKEN'),
+                    'GITHUB_API_TOKEN' => getenv('GITHUB_API_TOKEN'),
                 ]);
             }
         }

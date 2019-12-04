@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser;
 
+use AirSlate\Releaser\Exceptions\NothingToCommitException;
 use AirSlate\Releaser\Factories\ProcessorFactory;
 use AirSlate\Releaser\Processors\FileProcessor;
 use Fluffy\GithubClient\Client;
@@ -89,7 +90,8 @@ class Builder
         $processor = $factory->make($closure, $this->client, $this->client->getOwner(), $this->repository);
         $process = $closure($processor);
 
-        $this->stagedFiles = array_merge($this->stagedFiles, $process->put());
+        $files = array_filter($process->put());
+        $this->stagedFiles = array_merge($this->stagedFiles, $files);
 
         return $this;
     }
@@ -125,6 +127,10 @@ class Builder
 
     public function branch(string $branch)
     {
+        if (empty($this->stagedFiles)) {
+            return $this;
+        }
+
         $this->branchName = $branch;
         if ($this->task !== null) {
             $this->branchName = "{$this->task}-{$this->branchName}";
@@ -150,6 +156,10 @@ class Builder
     {
         if ($this->task !== null) {
             $message = "[{$this->task}] {$message}";
+        }
+
+        if (empty($this->stagedFiles)) {
+            throw new NothingToCommitException();
         }
 
         $commit = $this->client->commits()->get($this->repository, $this->branchRef->objectSha);
