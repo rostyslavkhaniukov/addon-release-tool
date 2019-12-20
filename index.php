@@ -20,7 +20,7 @@ $client = new GithubClient([
     'token' => getenv('GITHUB_OAUTH_TOKEN'),
 ]);
 
-$a = $client->contents()->readFile('airslateinc', 'prefill-from-source-addons', 'docker/config');
+$a = $client->contents()->read('airslateinc', 'prefill-from-source-addons', 'docker/config');
 
 var_dump($a);
 

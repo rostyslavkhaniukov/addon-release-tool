@@ -70,6 +70,23 @@ class Builder
         return $this;
     }
 
+    public function verifyNext(Closure $closure, ?callable $failCallback = null)
+    {
+        $factory = new ProcessorFactory();
+        $processor = $factory->make($closure, $this->client, $this->client->getOwner(), $this->repository);
+        $process = $closure($processor);
+
+        if (!$process) {
+            if ($failCallback !== null) {
+                $failCallback();
+            }
+            return new SkipStepBuilder($this);
+        }
+
+        return $this;
+    }
+
+
     public function notify(string $message)
     {
         if ($this->output !== null) {
