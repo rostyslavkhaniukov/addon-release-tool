@@ -56,7 +56,7 @@ abstract class AddonsCommand extends Command
     {
     }
 
-    protected function nothingToCommit(string $addon)
+    protected function nothingToCommit(string $addon, InputInterface $input, OutputInterface $output)
     {
     }
 }

@@ -90,7 +90,7 @@ class Builder
     public function notify(string $message)
     {
         if ($this->output !== null) {
-            $this->output->writeln("<info>{$this->repository}: {$message}.</info>");
+            $this->output->writeln("<info>{$this->repository}: {$message}</info>");
         }
 
         return $this;
@@ -240,6 +240,8 @@ class Builder
             $this->branchName,
             $this->baseBranch
         );
+
+        return $this;
     }
 
     /**
