@@ -16,13 +16,13 @@ use Fluffy\GithubClient\Models\StagedFile;
 class FileProcessor implements ProcessorInterface
 {
     /** @var Client */
-    private $client;
+    protected $client;
 
     /** @var string */
-    private $repository;
+    protected $repository;
 
     /** @var string */
-    private $owner;
+    protected $owner;
 
     /** @var WorkingFile[] */
     protected $workingFiles = [];
@@ -64,6 +64,17 @@ class FileProcessor implements ProcessorInterface
 
         $this->workingFiles[$file] = new WorkingFile($file, $content->getDecoded());
         $this->snapshots[$file] = clone $this->workingFiles[$file];
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function clear()
+    {
+        $this->workingFiles = [];
+        $this->snapshots = [];
 
         return $this;
     }

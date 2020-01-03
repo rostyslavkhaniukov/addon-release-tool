@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace AirSlate\Releaser\Commands;
 
 use AirSlate\Releaser\Builder;
-use AirSlate\Releaser\Exceptions\FileNotFoundInRepositoryException;
 use AirSlate\Releaser\Processors\JsonProcessor;
-use AirSlate\Releaser\Processors\XmlProcessor;
-use AirSlate\Releaser\Processors\YamlProcessor;
-use Symfony\Component\Console\Command\Command;
+use AirSlate\Releaser\Services\SchemesPathsFetcher;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Fluffy\GithubClient\Client as GithubClient;
 
-class CheckVersions extends Command
+class CheckVersions extends AddonsCommand
 {
     /**
      * @return void
@@ -26,37 +22,32 @@ class CheckVersions extends Command
             ->setDescription('Check versions');
     }
 
+    protected function beforeCommand(InputInterface $input, OutputInterface $output)
+    {
+        $output->writeln('<info>Check if addon has versions.</info>');
+    }
+
     /**
+     * @param string $addon
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return void
      * @throws \ReflectionException
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function step(string $addon, InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('<info>Adding CircleCI to addons.</info>');
-        $client = new GithubClient([
-            'owner' => getenv('OWNER'),
-            'token' => getenv('GITHUB_OAUTH_TOKEN'),
-        ]);
+        $schemesFetcher = new SchemesPathsFetcher();
+        $schemes = $schemesFetcher->fetch($addon);
 
-        $this->config = require_once './config/addons.php';
-        $addons = $this->config['addons'] ?? [];
-
-        foreach ($addons as $addon) {
-            try {
-                (new Builder($client, $addon))
-                    ->setOutput($output)
-                    ->verify(function (JsonProcessor $schema) use ($output, $addon) {
-                        return $schema
-                            ->take('docker/config/addon/addon.json')
-                            ->isset('data.attributes.version');
-                    }, function () use ($output, $addon) {
-                        $output->writeln("<info>{$addon} has no version</info>");
-                    });
-            } catch (\Exception $e) {
-                $output->writeln("<comment>{$addon} has not scheme</comment>");
-            }
+        foreach ($schemes as $scheme) {
+            (new Builder($this->client, $addon))
+                ->setOutput($output)
+                ->verify(function (JsonProcessor $schema) use ($output, $addon, $scheme) {
+                    return $schema
+                        ->take($scheme)
+                        ->isset('data.attributes.version');
+                }, function () use ($output, $addon) {
+                    $output->writeln("<comment>Something in repo {$addon} has no version</comment>");
+                });
         }
     }
 }

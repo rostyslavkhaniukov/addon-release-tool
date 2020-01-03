@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AirSlate\Releaser;
 
 use SensioLabs\Consul\ServiceFactory;
+use SensioLabs\Consul\Services\KVInterface;
 
 /**
  * Class CircleCIEnvPatcher
@@ -14,14 +15,7 @@ class ConsulAddonFetcher
 {
     public function collection()
     {
-        $consulServiceFactory = new ServiceFactory([
-            'base_uri' => 'http://consul.airslate-stage.xyz',
-            'headers' => [
-                'X-Consul-Token' => 'aa953920-2a02-8edc-c6b5-a04641f55d73',
-            ],
-        ]);
 
-        $keyValueStorage = $consulServiceFactory->get('kv');
         $response = $keyValueStorage->get('apps/addons', [
             'raw' => true,
             'recurse' => true

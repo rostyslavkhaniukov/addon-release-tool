@@ -104,7 +104,12 @@ class Builder
     public function step(Closure $closure)
     {
         $factory = new ProcessorFactory();
-        $processor = $factory->make($closure, $this->client, $this->client->getOwner(), $this->repository);
+        $processor = $factory->make(
+            $closure,
+            $this->client,
+            $this->client->getOwner(),
+            $this->repository
+        );
         $process = $closure($processor);
 
         $files = array_filter($process->put());

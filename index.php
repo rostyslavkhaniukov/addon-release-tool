@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use AirSlate\Releaser\Builder;
-use AirSlate\Releaser\Processors\FileProcessor;
-use AirSlate\Releaser\Processors\YamlProcessor;
+use AirSlate\Releaser\Services\SchemesPathsFetcher;
 use Fluffy\GithubClient\Client as GithubClient;
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -20,7 +18,11 @@ $client = new GithubClient([
     'token' => getenv('GITHUB_OAUTH_TOKEN'),
 ]);
 
-$a = $client->contents()->read('airslateinc', 'prefill-from-source-addons', 'docker/config');
+try {
+    $fetcher = new SchemesPathsFetcher();
+    $v = $fetcher->fetch('prefill-from-source-addons');
 
-var_dump($a);
-
+    var_dump(iterator_to_array($v));
+} catch (\Throwable $e) {
+    var_dump($e->getMessage());
+}

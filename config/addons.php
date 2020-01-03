@@ -21,7 +21,7 @@ return [
         //'hide-fields-values-addon',
         'roles-users-management-addon',
         'create-slate-reminder-addon',
-        'watcher-from-source-addons',
+        // 'watcher-from-source-addons',
         'create-slate-addon',
         'google-cloud-print-addon',
         'smartsheet-export-addon',

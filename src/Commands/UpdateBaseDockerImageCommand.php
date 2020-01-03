@@ -17,6 +17,9 @@ class UpdateBaseDockerImageCommand extends Command
     /** @var array */
     private $config;
 
+    /** @var GithubClient */
+    private $client;
+
     /**
      * @return void
      */
@@ -25,6 +28,17 @@ class UpdateBaseDockerImageCommand extends Command
         $this
             ->setName('docker:update-base')
             ->setDescription('Update base Docker image');
+    }
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->config = require_once './config/addons.php';
+        $this->client = new GithubClient([
+            'owner' => getenv('OWNER'),
+            'token' => getenv('GITHUB_OAUTH_TOKEN'),
+        ]);
     }
 
     /**
@@ -36,16 +50,11 @@ class UpdateBaseDockerImageCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $output->writeln('<info>Docker base image updating.</info>');
-        $this->config = require_once './config/addons.php';
-        $client = new GithubClient([
-            'owner' => getenv('OWNER'),
-            'token' => getenv('GITHUB_OAUTH_TOKEN'),
-        ]);
 
         $addons = $this->config['addons'] ?? [];
         foreach ($addons as $addon) {
             try {
-                (new Builder($client, $addon))
+                (new Builder($this->client, $addon))
                     ->forTask('AAD-897')
                     ->from('develop')
                     ->step(function (FileProcessor $dockerfile) {
