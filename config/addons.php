@@ -37,6 +37,7 @@ return [
         'create-slate-another-flow-addon',
         'lock-slate-bot',
         'two-way-binding-addons',
+        'calculate-addon',
     ],
     'labels' => [
         [

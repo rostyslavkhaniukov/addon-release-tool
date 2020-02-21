@@ -11,14 +11,16 @@ use Symfony\Component\Console\Input\ArrayInput;
 class ComposerProcessor extends JsonProcessor
 {
     private $composerJsonContent;
+    private $composerLockContent;
 
     public function __construct(Client $client, string $owner, string $repository)
     {
-        parent::__construct($client, $owner, $repository);
+        parent::__construct($client, $owner, $repository, '');
 
         $this->take('composer.json')->take('composer.lock');
 
         $this->composerJsonContent = json_decode($this->workingFiles['composer.json']->getContent(), true);
+        $this->composerLockContent = json_decode($this->workingFiles['composer.lock']->getContent(), true);
     }
 
     public function ensure(string $dependency, bool $isDev = false): self
@@ -81,5 +83,22 @@ class ComposerProcessor extends JsonProcessor
         }
 
         return false;
+    }
+
+    /**
+     * @param string $checkedPackage
+     * @return string|null
+     */
+    public function getLockedVersion(string $checkedPackage): ?string
+    {
+        $packages = $this->composerLockContent['packages'] ?? [];
+
+        foreach ($packages as $package) {
+            if ($package['name'] === $checkedPackage) {
+                return $package['version'];
+            }
+        }
+
+        return null;
     }
 }

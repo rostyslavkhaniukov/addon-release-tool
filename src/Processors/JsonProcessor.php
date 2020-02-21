@@ -4,33 +4,31 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser\Processors;
 
+use AirSlate\Releaser\DTO\WorkingFile;
 use Exception;
+use Illuminate\Support\Arr;
 
 class JsonProcessor extends FileProcessor
 {
     /**
+     * @param WorkingFile $file
      * @param string $key
      * @return bool
-     * @throws Exception
      */
-    public function isset(string $key): bool
+    public function isset(WorkingFile $file, string $key): bool
     {
-        $file = end($this->workingFiles);
-        if (!$file) {
-            throw new Exception('Current file not found');
-        }
-
         $value = json_decode($file->getContent(), true);
-        $parts = explode('.', $key);
-        foreach ($parts as $part) {
-            if (isset($value[$part])) {
-                $value = $value[$part];
-            } else {
-                return false;
-            }
-        }
+        return Arr::has($value, $key);
+    }
 
-        return true;
+    /**
+     * @param WorkingFile $file
+     * @param string $key
+     * @return bool
+     */
+    public function notIsset(WorkingFile $file, string $key): bool
+    {
+        return !$this->isset($file, $key);
     }
 
     /**
@@ -38,7 +36,7 @@ class JsonProcessor extends FileProcessor
      * @return JsonProcessor
      * @throws Exception
      */
-    public function unsetKey(string $key): JsonProcessor
+    public function unsetKey(WorkingFile $file, string $key): JsonProcessor
     {
         $keys = array_keys($this->workingFiles);
         $fileKey = reset($keys);
@@ -64,15 +62,5 @@ class JsonProcessor extends FileProcessor
 
         $this->workingFiles[$fileKey]->setContent($result);
         return $this;
-    }
-
-    /**
-     * @param string $key
-     * @return bool
-     * @throws Exception
-     */
-    public function notIsset(string $key): bool
-    {
-        return !$this->isset($key);
     }
 }

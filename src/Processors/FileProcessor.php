@@ -21,6 +21,9 @@ class FileProcessor implements ProcessorInterface
     /** @var string */
     protected $repository;
 
+    /** @var string|null */
+    protected $sha;
+
     /** @var string */
     protected $owner;
 
@@ -40,12 +43,14 @@ class FileProcessor implements ProcessorInterface
      * @param Client $client
      * @param string $owner
      * @param string $repository
+     * @param string|null $sha
      */
-    public function __construct(Client $client, string $owner, string $repository)
+    public function __construct(Client $client, string $owner, string $repository, ?string $sha)
     {
         $this->client = $client;
         $this->owner = $owner;
         $this->repository = $repository;
+        $this->sha = $sha;
     }
 
     /**
@@ -68,6 +73,13 @@ class FileProcessor implements ProcessorInterface
         return $this;
     }
 
+    public function delete(string $file)
+    {
+        $tree = $this->client->trees()->get($this->owner, $this->repository, $this->sha);
+
+
+    }
+
     /**
      * @return $this
      */
@@ -85,7 +97,7 @@ class FileProcessor implements ProcessorInterface
      */
     public function with(string $file)
     {
-        $content = $this->client->contents()->readFile($this->owner, $this->repository, $file);
+        $content = $this->client->contents()->read($this->owner, $this->repository, $file);
         $this->withFilePath = $file;
         $this->withFileBuffer = $content->getDecoded();
 
@@ -109,6 +121,7 @@ class FileProcessor implements ProcessorInterface
         $content = file_get_contents($localPath);
 
         $this->workingFiles[$path] = new WorkingFile($path, $content);
+        $this->snapshots[$path] = new WorkingFile($path, '');
 
         return $this;
     }

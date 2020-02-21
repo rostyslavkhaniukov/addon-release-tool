@@ -7,6 +7,7 @@ namespace AirSlate\Releaser;
 use AirSlate\Releaser\Exceptions\NothingToCommitException;
 use AirSlate\Releaser\Factories\ProcessorFactory;
 use AirSlate\Releaser\Processors\FileProcessor;
+use AirSlate\Releaser\Services\VerifierService;
 use Fluffy\GithubClient\Client;
 use Fluffy\GithubClient\Entities\Branch;
 use Fluffy\GithubClient\Entities\Git;
@@ -50,36 +51,41 @@ class Builder
     private $output = null;
 
     /**
+     * @param Client $client
+     * @param string $repository
+     */
+    public function __construct(Client $client, string $repository)
+    {
+        $this->client = $client;
+        $this->repository = $repository;
+        $this->verifierService = new VerifierService($this->client, $repository);
+    }
+
+    /**
      * @param Closure $closure
      * @return $this|EmptyBuilder
      * @throws \ReflectionException
      */
     public function verify(Closure $closure, ?callable $failCallback = null)
     {
-        $factory = new ProcessorFactory();
-        $processor = $factory->make($closure, $this->client, $this->client->getOwner(), $this->repository);
-        $process = $closure($processor);
-
-        if (!$process) {
-            if ($failCallback !== null) {
-                $failCallback();
-            }
+        $result = $this->verifierService->verify($closure, $failCallback);
+        if (!$result) {
             return new EmptyBuilder();
         }
 
         return $this;
     }
 
+    /**
+     * @param Closure $closure
+     * @param callable|null $failCallback
+     * @return Builder|SkipStepBuilder
+     * @throws \ReflectionException
+     */
     public function verifyNext(Closure $closure, ?callable $failCallback = null)
     {
-        $factory = new ProcessorFactory();
-        $processor = $factory->make($closure, $this->client, $this->client->getOwner(), $this->repository);
-        $process = $closure($processor);
-
-        if (!$process) {
-            if ($failCallback !== null) {
-                $failCallback();
-            }
+        $result = $this->verifierService->verify($closure, $failCallback);
+        if (!$result) {
             return new SkipStepBuilder($this);
         }
 
@@ -104,11 +110,13 @@ class Builder
     public function step(Closure $closure)
     {
         $factory = new ProcessorFactory();
+
         $processor = $factory->make(
             $closure,
             $this->client,
             $this->client->getOwner(),
-            $this->repository
+            $this->repository,
+            $this->branchRef->objectSha ?? $this->baseBranchEntity->commit->sha
         );
         $process = $closure($processor);
 
@@ -127,12 +135,6 @@ class Builder
         return $process;
     }
 
-    public function __construct(Client $client, string $repository)
-    {
-        $this->client = $client;
-        $this->repository = $repository;
-    }
-
     public function forTask(string $task): self
     {
         $this->task = $task;
@@ -143,6 +145,12 @@ class Builder
     public function from(string $branch)
     {
         $this->baseBranch = $branch;
+        $this->baseBranchEntity = $this->client->branches()->get(
+            $this->client->getOwner(),
+            $this->repository,
+            $this->baseBranch
+        );
+        $this->verifierService->setBranchSha($this->baseBranchEntity->commit->sha);
 
         return $this;
     }
@@ -157,12 +165,6 @@ class Builder
         if ($this->task !== null) {
             $this->branchName = "{$this->task}-{$this->branchName}";
         }
-
-        $this->baseBranchEntity = $this->client->branches()->get(
-            $this->client->getOwner(),
-            $this->repository,
-            $this->baseBranch
-        );
 
         $this->branchRef = $this->client->refs()->createRef(
             $this->client->getOwner(),
@@ -185,6 +187,7 @@ class Builder
         }
 
         $commit = $this->client->commits()->get($this->repository, $this->branchRef->objectSha);
+
         $tree = $this->client->trees()->createTree(
             $this->client->getOwner(),
             $this->repository,
@@ -192,7 +195,7 @@ class Builder
                 'base_tree' => $commit->commit->tree->getSha(),
                 'tree' => array_map(function (StagedFile $file) {
                     return [
-                        'path' => $file->getFilePath(),
+                        'path' => $file->getPath(),
                         'mode' => FileMode::BLOB,
                         'type' => LeafType::BLOB,
                         'sha' => $file->getBlob()->getSha(),

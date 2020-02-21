@@ -1,28 +1,18 @@
 <?php
 declare(strict_types=1);
 
-use AirSlate\Releaser\Services\SchemesPathsFetcher;
-use Fluffy\GithubClient\Client as GithubClient;
-
 require_once __DIR__ . '/vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::create(__DIR__);
-$dotenv->load();
-
-$addons = [
-    'packet-delete-addon',
-];
-
-$client = new GithubClient([
-    'owner' => getenv('OWNER'),
-    'token' => getenv('GITHUB_OAUTH_TOKEN'),
+$client = new \GuzzleHttp\Client();
+$a = $client->request('GET', 'http:/v1.40/containers/json', [
+    'curl' => [
+        CURLOPT_UNIX_SOCKET_PATH => '/var/run/docker.sock'
+    ]
 ]);
 
-try {
-    $fetcher = new SchemesPathsFetcher();
-    $v = $fetcher->fetch('prefill-from-source-addons');
-
-    var_dump(iterator_to_array($v));
-} catch (\Throwable $e) {
-    var_dump($e->getMessage());
+$aa = json_decode($a->getBody()->getContents(), true);
+foreach ($aa as $aaa) {
+    echo $aaa['Names'][0] . ' ' . $aaa['State'] . "\n";
+    var_dump($aaa);
+    die;
 }

@@ -13,6 +13,7 @@ $dotenv->load();
 $app = new Symfony\Component\Console\Application('Lets rock and develop addons', '0.0.1');
 $app->add(new AirSlate\Releaser\Commands\PatchCircleCIEnvCommand());
 $app->add(new AirSlate\Releaser\Commands\AddonFetchCommand());
+$app->add(new AirSlate\Releaser\Commands\ConstantsFetchCommand());
 $app->add(new AirSlate\Releaser\Commands\ReleaseDone());
 $app->add(new AirSlate\Releaser\Commands\PullRequests\AddCircleCI\AddCircleCICommand());
 $app->add(new AirSlate\Releaser\Commands\PullRequests\DropAutoInstall\DropAutoInstallCommand());
@@ -21,4 +22,8 @@ $app->add(new AirSlate\Releaser\Commands\PullRequests\EnablePHPCS\EnablePHPCS())
 $app->add(new AirSlate\Releaser\Commands\PullRequests\EnablePHPMD\EnablePHPMD());
 $app->add(new AirSlate\Releaser\Commands\UpdateBaseDockerImageCommand());
 $app->add(new AirSlate\Releaser\Commands\CheckVersions());
+$app->add(new AirSlate\Releaser\Commands\CheckDependencies());
+$app->add(new AirSlate\Releaser\Commands\CheckWebConfig());
+$app->add(new AirSlate\Releaser\Commands\PullRequests\NewRegistration\NewRegistration());
+$app->add(new AirSlate\Releaser\Commands\PullRequests\AddDockerIgnore\AddDockerIgnore());
 $app->run();

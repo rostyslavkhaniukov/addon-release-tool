@@ -21,11 +21,17 @@ class ProcessorFactory
      * @param Client $client
      * @param string $owner
      * @param string $repository
+     * @param string|null $sha
      * @return ProcessorInterface
      * @throws ReflectionException
      */
-    public function make(Closure $closure, Client $client, string $owner, string $repository): ProcessorInterface
-    {
+    public function make(
+        Closure $closure,
+        Client $client,
+        string $owner,
+        string $repository,
+        ?string $sha
+    ): ProcessorInterface {
         $reflection = new ReflectionFunction($closure);
         $arguments  = $reflection->getParameters();
 
@@ -34,7 +40,7 @@ class ProcessorFactory
         $processorClass = $processorParameter->getClass();
 
         /** @var ProcessorInterface $instance */
-        $instance = $processorClass->newInstance($client, $owner, $repository);
+        $instance = $processorClass->newInstance($client, $owner, $repository, $sha);
         return $instance;
     }
 }
