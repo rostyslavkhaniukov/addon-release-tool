@@ -6,13 +6,16 @@ namespace AirSlate\Releaser\Commands;
 
 use AirSlate\Releaser\Builder;
 use AirSlate\Releaser\Processors\ComposerProcessor;
-use AirSlate\Releaser\Processors\JsonProcessor;
-use AirSlate\Releaser\Services\SchemesPathsFetcher;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CheckDependencies extends AddonsCommand
 {
+    /** @var Table */
+    private $table;
+
     /**
      * @return void
      */
@@ -20,12 +23,17 @@ class CheckDependencies extends AddonsCommand
     {
         $this
             ->setName('deps:check')
-            ->setDescription('Check dependencies');
+            ->setDescription('Check dependencies')
+            ->addArgument('package', InputArgument::REQUIRED, 'Package for check.')
+            ->addArgument('operator', InputArgument::REQUIRED, 'Operator for check.')
+            ->addArgument('version', InputArgument::REQUIRED, 'Version for check.');
     }
 
     protected function beforeCommand(InputInterface $input, OutputInterface $output)
     {
         $output->writeln('<info>Check if addon has dependency.</info>');
+
+        $this->table = new Table($output);
     }
 
     /**
@@ -38,16 +46,32 @@ class CheckDependencies extends AddonsCommand
     {
         (new Builder($this->client, $addon))
             ->setOutput($output)
-            ->verify(function (ComposerProcessor $schema) use ($output, $addon) {
-                $lockedVersion = $schema->getLockedVersion('pdffiller/airslate-addon-sdk');
+            ->verify(function (ComposerProcessor $schema) use ($input, $output, $addon) {
+                $lockedVersion = $schema->getLockedVersion($input->getArgument('package'));
+                if ($lockedVersion === null) {
+                    return false;
+                }
 
-                if (version_compare(trim($lockedVersion, 'v'), '8.2.0', '<')) {
-                    $output->writeln("<comment>{$addon} has {$lockedVersion}</comment>");
+                if (
+                    version_compare(
+                        trim($lockedVersion, 'v'),
+                        $input->getArgument('version'),
+                        $input->getArgument('operator')
+                    )
+                ) {
+                    $this->table->addRow([
+                        $addon, $lockedVersion
+                    ]);
                 }
 
                 return $lockedVersion !== null;
             }, function () use ($output, $addon) {
-                $output->writeln("<comment>Something in repo {$addon} has no version</comment>");
+                $this->table->addRow([$addon, 'package not installed']);
             });
+    }
+
+    protected function afterCommand(InputInterface $input, OutputInterface $output)
+    {
+        $this->table->render();
     }
 }

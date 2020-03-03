@@ -7,6 +7,8 @@ namespace AirSlate\Releaser\Commands;
 use AirSlate\Releaser\Exceptions\NothingToCommitException;
 use Fluffy\GithubClient\Client as GithubClient;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -39,16 +41,30 @@ abstract class AddonsCommand extends Command
     {
         $this->beforeCommand($input, $output);
         $addons = $this->config['addons'] ?? [];
+
+        $progressBar = new ProgressBar($output, count($addons));
+        $progressBar->setBarCharacter('<fg=green>=</>');
+        $progressBar->setProgressCharacter("\xF0\x9F\x8D\xBA");
+
         foreach ($addons as $addon) {
             try {
                 $this->step($addon, $input, $output);
+                $progressBar->advance();
             } catch (NothingToCommitException $exception) {
-                $this->nothingToCommit($addon);
+                $this->nothingToCommit($addon, $input, $output);
             }
         }
+
+        $progressBar->finish();
+        $output->writeln('');
+        $this->afterCommand($input, $output);
     }
 
     protected function beforeCommand(InputInterface $input, OutputInterface $output)
+    {
+    }
+
+    protected function afterCommand(InputInterface $input, OutputInterface $output)
     {
     }
 

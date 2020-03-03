@@ -26,4 +26,5 @@ $app->add(new AirSlate\Releaser\Commands\CheckDependencies());
 $app->add(new AirSlate\Releaser\Commands\CheckWebConfig());
 $app->add(new AirSlate\Releaser\Commands\PullRequests\NewRegistration\NewRegistration());
 $app->add(new AirSlate\Releaser\Commands\PullRequests\AddDockerIgnore\AddDockerIgnore());
+$app->add(new AirSlate\Releaser\Commands\PullRequests\FixReg\FixRegCommand());
 $app->run();
