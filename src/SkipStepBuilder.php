@@ -9,6 +9,9 @@ class SkipStepBuilder
     /** @var Builder */
     private $builder;
 
+    /**
+     * @param Builder $builder
+     */
     public function __construct(Builder $builder)
     {
         $this->builder = $builder;
@@ -17,9 +20,9 @@ class SkipStepBuilder
     /**
      * @param string $name
      * @param array $arguments
-     * @return $this
+     * @return Builder
      */
-    public function __call(string $name, array $arguments): self
+    public function __call(string $name, array $arguments): Builder
     {
         return $this->builder;
     }
