@@ -5,32 +5,44 @@ declare(strict_types=1);
 namespace AirSlate\Releaser\Services;
 
 use Fluffy\GithubClient\Client as GithubClient;
+use Generator;
 
 /**
- * @package AirSlate\Releaser
+ * @package AirSlate\Releaser\Services
  */
 class SchemesPathsFetcher
 {
     /** @var GithubClient */
     private $client;
 
-    public function __construct()
+    /**
+     * @param GithubClient $client
+     */
+    public function __construct(GithubClient $client)
     {
-        $this->client = new GithubClient([
-            'owner' => getenv('OWNER'),
-            'token' => getenv('GITHUB_OAUTH_TOKEN'),
-        ]);
+        $this->client = $client;
     }
 
-    public function fetch(string $repository): \Generator
-    {
-        $branch = $this->client->branches()->get(getenv('OWNER'), $repository, 'develop');
+    /**
+     * @param string $owner
+     * @param string $repository
+     * @param string $branchName
+     * @param string $fileName
+     * @return Generator
+     */
+    public function fetch(
+        string $owner,
+        string $repository,
+        string $branchName,
+        string $fileName
+    ): Generator {
+        $branch = $this->client->branches()->get($owner, $repository, $branchName);
         $tree = $this->client
             ->trees()
-            ->get(getenv('OWNER'), $repository, $branch->commit->sha);
+            ->get($owner, $repository, $branch->commit->sha);
 
         foreach ($tree->getTree() as $treeLeaf) {
-            if (strpos($treeLeaf['path'], '/addon.json') !== false) {
+            if (strpos($treeLeaf['path'], '/' . $fileName) !== false) {
                 yield $treeLeaf['path'];
             }
         }
