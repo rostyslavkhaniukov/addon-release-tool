@@ -20,6 +20,9 @@ abstract class AddonsCommand extends Command
     /** @var GithubClient */
     protected $client;
 
+    /** @var Table */
+    protected $table;
+
     public function __construct()
     {
         parent::__construct();
@@ -62,10 +65,12 @@ abstract class AddonsCommand extends Command
 
     protected function beforeCommand(InputInterface $input, OutputInterface $output)
     {
+        $this->table = new Table($output);
     }
 
     protected function afterCommand(InputInterface $input, OutputInterface $output)
     {
+        $this->table->render();
     }
 
     protected function step(string $addon, InputInterface $input, OutputInterface $output)

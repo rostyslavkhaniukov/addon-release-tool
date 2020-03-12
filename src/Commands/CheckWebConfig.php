@@ -10,6 +10,7 @@ use AirSlate\Releaser\Processors\ComposerProcessor;
 use AirSlate\Releaser\Processors\FileProcessor;
 use AirSlate\Releaser\Processors\JsonProcessor;
 use AirSlate\Releaser\Services\SchemesPathsFetcher;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -27,6 +28,8 @@ class CheckWebConfig extends AddonsCommand
 
     protected function beforeCommand(InputInterface $input, OutputInterface $output)
     {
+        parent::beforeCommand($input, $output);
+
         $output->writeln('<info>Check if addon has dependency.</info>');
     }
 
@@ -44,7 +47,9 @@ class CheckWebConfig extends AddonsCommand
                 try {
                     $file->take('public/web.config');
 
-                    $output->writeln("<comment>{$addon} has file web.config</comment>");
+                    $this->table->addRow([
+                        $addon, 'true'
+                    ]);
                 } catch (FileNotFoundInRepositoryException $exception) {
                 }
 

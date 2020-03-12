@@ -35,7 +35,7 @@ class CheckVersions extends AddonsCommand
      */
     protected function step(string $addon, InputInterface $input, OutputInterface $output)
     {
-        $schemesFetcher = new SchemesPathsFetcher();
+        $schemesFetcher = new SchemesPathsFetcher($this->client);
         $schemes = $schemesFetcher->fetch($addon);
 
         foreach ($schemes as $scheme) {

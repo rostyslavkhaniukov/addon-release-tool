@@ -23,12 +23,17 @@ class AddonSchemeProcessor extends JsonProcessor
     {
         parent::__construct($client, $owner, $repository, $sha);
         
-        $this->schemesFetcher = new SchemesPathsFetcher();
+        $this->schemesFetcher = new SchemesPathsFetcher($client);
     }
 
     public function takeAll()
     {
-        $schemes = $this->schemesFetcher->fetch($this->repository);
+        $schemes = $this->schemesFetcher->fetch(
+            $this->owner,
+            $this->repository,
+            'develop',
+            'addon.json'
+        );
         foreach ($schemes as $scheme) {
             $this->take($scheme);
         }

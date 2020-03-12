@@ -13,9 +13,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CheckDependencies extends AddonsCommand
 {
-    /** @var Table */
-    private $table;
-
     /**
      * @return void
      */
@@ -31,9 +28,9 @@ class CheckDependencies extends AddonsCommand
 
     protected function beforeCommand(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('<info>Check if addon has dependency.</info>');
+        parent::beforeCommand($input, $output);
 
-        $this->table = new Table($output);
+        $output->writeln('<info>Check if addon has dependency.</info>');
     }
 
     /**
@@ -68,10 +65,5 @@ class CheckDependencies extends AddonsCommand
             }, function () use ($output, $addon) {
                 $this->table->addRow([$addon, 'package not installed']);
             });
-    }
-
-    protected function afterCommand(InputInterface $input, OutputInterface $output)
-    {
-        $this->table->render();
     }
 }
