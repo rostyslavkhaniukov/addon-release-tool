@@ -23,6 +23,7 @@ $app->add(new AirSlate\Releaser\Commands\PullRequests\EnablePHPMD\EnablePHPMD())
 $app->add(new AirSlate\Releaser\Commands\UpdateBaseDockerImageCommand());
 $app->add(new AirSlate\Releaser\Commands\CheckVersions());
 $app->add(new AirSlate\Releaser\Commands\CheckDependencies());
+$app->add(new AirSlate\Releaser\Commands\UpdateDependencies());
 $app->add(new AirSlate\Releaser\Commands\CheckWebConfig());
 $app->add(new AirSlate\Releaser\Commands\PullRequests\NewRegistration\NewRegistration());
 $app->add(new AirSlate\Releaser\Commands\PullRequests\AddDockerIgnore\AddDockerIgnore());

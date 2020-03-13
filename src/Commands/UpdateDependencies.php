@@ -6,6 +6,7 @@ namespace AirSlate\Releaser\Commands;
 
 use AirSlate\Releaser\Builder;
 use AirSlate\Releaser\Processors\ComposerProcessor;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -58,15 +59,11 @@ class CheckDependencies extends AddonsCommand
                     $this->table->addRow([
                         $addon, $lockedVersion
                     ]);
-                } else {
-                    $this->table->addRow([
-                        $addon, 'installed'
-                    ]);
                 }
 
                 return $lockedVersion !== null;
             }, function () use ($output, $addon) {
-                $this->table->addRow([$addon, 'not installed']);
+                $this->table->addRow([$addon, 'package not installed']);
             });
     }
 }
