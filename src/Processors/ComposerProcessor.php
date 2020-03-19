@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser\Processors;
 
+use AirSlate\Releaser\Docker\DockerContainer;
+use AirSlate\Releaser\Services\DependenciesUpdater;
 use Composer\Console\Application;
 use Fluffy\GithubClient\Client;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -23,53 +25,24 @@ class ComposerProcessor extends JsonProcessor
         $this->composerLockContent = json_decode($this->workingFiles['composer.lock']->getContent(), true);
     }
 
-    public function ensure(string $dependency, bool $isDev = false): self
+    public function ensure(string $dependency, string $version, bool $isDev = false): self
     {
         $packagesKey = $isDev ? 'require-dev' : 'require';
-        if (!array_key_exists($dependency, $this->composerJsonContent[$packagesKey])) {
-            $this->composerJsonContent[$packagesKey][$dependency] = '*';
-        }
+        $this->composerJsonContent[$packagesKey][$dependency] = $version;
 
         $newContent = json_encode($this->composerJsonContent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
         $this->workingFiles['composer.json']->setContent($newContent);
 
-        $this->update();
+        $composer = new DependenciesUpdater();
+        $result = $composer->update(
+            $this->workingFiles['composer.json']->getContent(),
+            $this->workingFiles['composer.lock']->getContent(),
+            $dependency,
+            '9cba739e0651b588ed56ee9fca7f2c65b80cbb89'
+        );
 
-        return $this;
-    }
+        $this->workingFiles['composer.lock']->setContent($result);
 
-    public function update(): self
-    {
-        $tempFilePath = tempnam(sys_get_temp_dir(), 'composer');
-        $sysDir = sys_get_temp_dir();
-
-        $tempComposerJson = $tempFilePath . '.json';
-        $tempComposerLock = $tempFilePath . '.lock';
-
-        $content = json_encode($this->composerJsonContent, JSON_PRETTY_PRINT);
-        file_put_contents($tempComposerJson, $content);
-
-        @ini_set('memory_limit', '1536M');
-        putenv("COMPOSER={$tempComposerJson}");
-        putenv("COMPOSER_VENDOR_DIR=${sysDir}/test-vendor");
-
-        $auth = [];
-        $auth['github-oauth']['github.com'] = getenv('GITHUB_OAUTH_TOKEN');
-        putenv("COMPOSER_AUTH=" . json_encode($auth));
-        $input = new ArrayInput(['command' => 'update', '--ignore-platform-reqs' => null]);
-
-        $app = new Application();
-        $app->setCatchExceptions(false);
-
-        try {
-            $app->run($input);
-        } catch (\Throwable $e) {
-            var_dump($e->getMessage());
-        }
-
-        var_dump('ss');
-
-        $this->workingFiles['composer.lock']->setContent(file_get_contents($tempComposerLock));
         return $this;
     }
 

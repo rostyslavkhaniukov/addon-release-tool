@@ -70,7 +70,9 @@ abstract class AddonsCommand extends Command
 
     protected function afterCommand(InputInterface $input, OutputInterface $output)
     {
-        $this->table->render();
+        if ($this->table !== null) {
+            $this->table->render();
+        }
     }
 
     protected function step(string $addon, InputInterface $input, OutputInterface $output)

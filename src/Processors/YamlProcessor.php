@@ -13,4 +13,16 @@ class YamlProcessor extends FileProcessor
 
         return $callback($encoded);
     }
+
+    public function process(string $file, callable $callback)
+    {
+        $lastFile = $this->workingFiles[$file];
+        $encoded = yaml_parse($lastFile->getContent());
+
+        $data = yaml_emit($callback($encoded));
+
+        $this->workingFiles[$file]->setContent(yaml_emit($callback($encoded)));
+
+        return $this;
+    }
 }

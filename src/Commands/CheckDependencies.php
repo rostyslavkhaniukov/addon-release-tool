@@ -60,7 +60,7 @@ class CheckDependencies extends AddonsCommand
                     ]);
                 } else {
                     $this->table->addRow([
-                        $addon, 'installed'
+                        $addon, $lockedVersion
                     ]);
                 }
 
