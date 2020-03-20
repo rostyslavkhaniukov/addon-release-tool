@@ -57,7 +57,10 @@ class JsonProcessor extends FileProcessor
 
         unset($value[array_shift($parts)]);
 
-        $result = json_encode($original, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $result = json_encode(
+            $original,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
         $result = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $result);
         $result .= "\n";
 
@@ -70,7 +73,10 @@ class JsonProcessor extends FileProcessor
         array_walk($this->workingFiles, function (WorkingFile $file) use ($callback) {
             $content = json_decode($file->getContent(), true);
 
-            $result = json_encode($callback($content), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $result = json_encode(
+                $callback($content),
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            );
             $result = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $result);
             $result .= "\n";
 
