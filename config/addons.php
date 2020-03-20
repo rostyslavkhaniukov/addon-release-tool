@@ -9,7 +9,6 @@ return [
         'tags-addon',
         'slack-notifier-addon',
         'prefill-from-source-addons',
-        'salesforce-addons',
         'quickbooks-invoice-addon',
         'export-to-source-addons',
         'google-spreadsheets-duplex-addon',
