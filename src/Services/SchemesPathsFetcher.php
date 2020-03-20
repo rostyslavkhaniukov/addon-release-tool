@@ -40,7 +40,6 @@ class SchemesPathsFetcher
         $tree = $this->client
             ->trees()
             ->get($owner, $repository, $branch->commit->sha);
-
         foreach ($tree->getTree() as $treeLeaf) {
             if (strpos($treeLeaf['path'], '/' . $fileName) !== false) {
                 yield $treeLeaf['path'];

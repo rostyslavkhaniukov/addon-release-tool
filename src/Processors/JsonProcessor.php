@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AirSlate\Releaser\Processors;
 
 use AirSlate\Releaser\DTO\WorkingFile;
+use Closure;
 use Exception;
 use Illuminate\Support\Arr;
 
@@ -50,7 +51,7 @@ class JsonProcessor extends FileProcessor
             if (isset($value[$part]) && is_array($value[$part])) {
                 $value = &$value[$part];
             } else {
-                throw new \Exception('Key not found');
+                throw new Exception('Key not found');
             }
         }
 
@@ -61,6 +62,21 @@ class JsonProcessor extends FileProcessor
         $result .= "\n";
 
         $this->workingFiles[$fileKey]->setContent($result);
+        return $this;
+    }
+
+    public function map(Closure $callback)
+    {
+        array_walk($this->workingFiles, function (WorkingFile $file) use ($callback) {
+            $content = json_decode($file->getContent(), true);
+
+            $result = json_encode($callback($content), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $result = preg_replace('/^(  +?)\\1(?=[^ ])/m', '$1', $result);
+            $result .= "\n";
+
+            $file->setContent($result);
+        });
+
         return $this;
     }
 }
