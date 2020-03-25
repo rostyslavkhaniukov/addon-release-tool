@@ -65,4 +65,5 @@ return [
             'description' => 'This PR need two approves',
         ],
     ],
+    'github_ouath_token' => env('GITHUB_OAUTH_TOKEN'),
 ];

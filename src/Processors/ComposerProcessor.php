@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace AirSlate\Releaser\Processors;
 
-use AirSlate\Releaser\Docker\DockerContainer;
+use AirSlate\Releaser\Docker\DockerContainerInstance;
 use AirSlate\Releaser\Services\DependenciesUpdater;
-use Composer\Console\Application;
 use Fluffy\GithubClient\Client;
-use Symfony\Component\Console\Input\ArrayInput;
 
 class ComposerProcessor extends JsonProcessor
 {
     private $composerJsonContent;
     private $composerLockContent;
 
-    public function __construct(Client $client, string $owner, string $repository)
-    {
+    /** @var DockerContainerInstance */
+    private $containerInstance;
+
+    public function __construct(
+        Client $client,
+        string $owner,
+        string $repository
+    ) {
         parent::__construct($client, $owner, $repository, '');
 
         $this->take('composer.json')->take('composer.lock');
@@ -25,7 +29,12 @@ class ComposerProcessor extends JsonProcessor
         $this->composerLockContent = json_decode($this->workingFiles['composer.lock']->getContent(), true);
     }
 
-    public function ensure(string $dependency, string $version, bool $isDev = false): self
+    public function setContainerInstance(DockerContainerInstance $containerInstance): void
+    {
+        $this->containerInstance = $containerInstance;
+    }
+
+    public function ensure(string $dependency, string $version, string $githubToken, bool $isDev = false): self
     {
         $packagesKey = $isDev ? 'require-dev' : 'require';
         $this->composerJsonContent[$packagesKey][$dependency] = $version;
@@ -38,7 +47,8 @@ class ComposerProcessor extends JsonProcessor
             $this->workingFiles['composer.json']->getContent(),
             $this->workingFiles['composer.lock']->getContent(),
             $dependency,
-            '9cba739e0651b588ed56ee9fca7f2c65b80cbb89'
+            $githubToken,
+            $this->containerInstance
         );
 
         $this->workingFiles['composer.lock']->setContent($result);

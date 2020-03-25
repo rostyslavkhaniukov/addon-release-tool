@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class AddonsCommand extends Command
 {
     /** @var array */
-    private $config;
+    protected $config;
 
     /** @var GithubClient */
     protected $client;
